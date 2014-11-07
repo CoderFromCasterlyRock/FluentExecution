@@ -3,6 +3,7 @@ package com.fluent.etrading.core;
 import org.slf4j.*;
 import org.springframework.context.support.*;
 
+import com.fluent.etrading.framework.collections.FluentWatch;
 import com.fluent.etrading.framework.core.*;
 
 import static com.fluent.etrading.framework.utility.ContainerUtil.*;
@@ -23,13 +24,13 @@ public final class FluentExecutionLauncher{
                 System.exit( ZERO );
             }
 
-            long initialTime                = System.currentTimeMillis();
-            logger.info( "Attempting to START Fluent Framework {}.", FluentContext.getContainerInfo() );
+            long initialTime                = FluentWatch.nowMillis();
+            logger.info( "Attempting to START Fluent Framework {}.", FluentLocale.getContainerInfo() );
 
             context 						= new ClassPathXmlApplicationContext( args[ZERO] );
             context.registerShutdownHook();
                         
-            logger.info( "Successfully STARTED Fluent Framework in [{}] ms.", ( System.currentTimeMillis() - initialTime) );
+            logger.info( "Successfully STARTED Fluent Framework in [{}] ms.", ( FluentWatch.nowMillis() - initialTime) );
             logger.info( "************************************************************** {}", NEWLINE );
 
 
