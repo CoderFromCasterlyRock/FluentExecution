@@ -132,7 +132,7 @@ public final class AggregateDataProcessor implements FluentInputEventListener, F
 
             try{
 
-                String instrumentId     = mdEvent.getInstrumentId();
+                String instrumentId     = mdEvent.getSymbol();
                 commonId                = instrumentId; //Use an instrument Mapper
                 if( commonId == null ) return;
 
@@ -140,7 +140,7 @@ public final class AggregateDataProcessor implements FluentInputEventListener, F
                 //For Swaps use gcd, for treasury use min
                 double gcdPriceTick     = 0.1;
 
-                MarketType marketType   = mdEvent.getMarket();
+                Marketplace marketType   = mdEvent.getMarket();
                 int bidRank             = ordinal.getRowIndex( true, marketType );
                 int askRank             = ordinal.getRowIndex( false, marketType );
 

@@ -20,14 +20,14 @@ public final class CreateStrategyEvent extends TraderDataEvent{
     private final int meq;
 
     private final String[] instrumentArray;
-    private final MarketType[] marketTypes;
+    private final Marketplace[] marketTypes;
     private final Side[] sideArray;
     private final int[] quantityArray;
 
 
     public CreateStrategyEvent( long eventId, FluentInputEventType type,
                                 String strategyOwner, String strategyName, Side strategySide, int strategyLegCount, double spread,
-                                String[] instrumentArray, MarketType[] marketTypes, int[] quantityArray, Side[] sideArray, int meq ){
+                                String[] instrumentArray, Marketplace[] marketTypes, int[] quantityArray, Side[] sideArray, int meq ){
 
         super( eventId, type, strategyOwner );
 
@@ -61,7 +61,7 @@ public final class CreateStrategyEvent extends TraderDataEvent{
     }
 
 
-    public final MarketType[] getMarketTypes( ){
+    public final Marketplace[] getMarketTypes( ){
         return marketTypes;
     }
 

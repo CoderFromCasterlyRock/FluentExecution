@@ -56,7 +56,7 @@ public final class DummyStrategyEventAdaptor implements Runnable, FluentService{
         long eventId                = FluentInputEventId.nextId();
         String traderName           = "Vicky Singh";
         String[] instrumentArray    = {"2_YEAR", "5_YEAR"};
-        MarketType[] marketArray    = {MarketType.BTEC, MarketType.BTEC};
+        Marketplace[] marketArray    = {Marketplace.BTEC, Marketplace.BTEC};
         int[] quantityArray         = {10, 20};
         Side[] sideArray            = {Side.BUY, Side.SELL};
         double spread               = 0.45;

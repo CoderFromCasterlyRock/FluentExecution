@@ -29,7 +29,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     private final BackoffStrategy backoff;
     private final ExecutorService service;
     private final CreateStrategyEvent cEvent;
-    private final FluentQueue<FluentInputEvent> queue;
+    private final FluentSPSCQueue<FluentInputEvent> queue;
     private final Map<String, MarketDataEvent> priceMap;
 
     private final static Logger LOGGER      =  LoggerFactory.getLogger( SpreadAlgo.class.getSimpleName() );
@@ -41,7 +41,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
         this.cEvent         = cEvent;
         this.instruments    = cEvent.getInstrumentArray();
         this.state          = AlgoState.CREATED;
-        this.backoff        = new ParkingBackoffStrategy( );
+        this.backoff        = new BackoffStrategy( );
         this.priceMap       = new HashMap<String, MarketDataEvent>( FOUR );
         this.queue          = new FluentSPSCQueue<FluentInputEvent>( FOUR * SIXTY_FOUR );
         this.service        = Executors.newSingleThreadExecutor( new FluentThreadFactory( getFullStrategyName() ) );
@@ -140,7 +140,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
         MarketDataEvent mdEvent = (MarketDataEvent) event;
         long mdEventId          = mdEvent.getEventId();
-        String instrumentId     = mdEvent.getInstrumentId();
+        String instrumentId     = mdEvent.getSymbol();
 
         boolean updatedNeeded   = marketUpdateRequired( instrumentId, instruments );
         if( !updatedNeeded ) return;
@@ -150,7 +150,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
             long orderId        = nextOutputEventId();
             OrderEvent order    = new OutrightOrderEvent(   getStrategyId(), orderId, mdEventId, ORDER_TO_MARKET,
-                                                            MarketType.BTEC, OrderType.NEW, instruments[0],
+                                                            Marketplace.BTEC, OrderType.NEW, instruments[0],
                                                             cEvent.getStrategySide(), cEvent.getSpread(),
                                                             cEvent.getQuantityArray()[0], cEvent.getQuantityArray()[0],
                                                             "e239063", "Vicky Singh", EMPTY );

@@ -82,8 +82,8 @@ public final class SpreadAlgoManager extends AbstractAlgoManager{
             break;
 
             case TREASURY_MD:
-            case ED_FUTURES_MD:
-            case T_FUTURES_MD:
+            case FUTURES_MD:
+            case SWAPS_MD:
                 handleMarketMessage( inputEvent );
             break;
 

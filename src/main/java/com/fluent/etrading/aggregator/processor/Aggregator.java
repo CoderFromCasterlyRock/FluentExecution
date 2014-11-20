@@ -18,7 +18,7 @@ public final class Aggregator{
     private final int[] bidRowIndicies;
     private final int[] askRowIndicies;
     private final double[][] empty;
-    private final MarketType[] markets;
+    private final Marketplace[] markets;
 
     private final AggregateRowOrdinal ordinal;
     private final NonBlockingHashMap<String, AggregateData> dataMap;

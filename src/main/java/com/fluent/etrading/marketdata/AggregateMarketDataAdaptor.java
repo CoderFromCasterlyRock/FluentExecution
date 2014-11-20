@@ -1,19 +1,19 @@
 package com.fluent.etrading.marketdata;
 
 import com.fluent.etrading.framework.events.core.*;
-import com.fluent.etrading.framework.market.core.MarketType;
+import com.fluent.etrading.framework.market.core.Marketplace;
 import com.fluent.etrading.framework.events.in.MarketDataEvent;
 import com.fluent.etrading.framework.events.in.MarketDataEventProvider;
 
 
 public final class AggregateMarketDataAdaptor{
 
-    private final MarketType marketType;
+    private final Marketplace marketType;
     private final FluentInputEventType ieType;
     private final MarketDataEventProvider provider;
     
 
-    public AggregateMarketDataAdaptor( FluentInputEventType ieType, MarketType marketType, MarketDataEventProvider provider ){
+    public AggregateMarketDataAdaptor( FluentInputEventType ieType, Marketplace marketType, MarketDataEventProvider provider ){
         this.ieType         = ieType;
         this.marketType     = marketType;
         this.provider		= provider;

@@ -3,7 +3,7 @@ package com.fluent.etrading.aggregator.core;
 import com.fluent.etrading.framework.market.core.*;
 
 import static com.fluent.etrading.framework.utility.ContainerUtil.*;
-import static com.fluent.etrading.framework.market.core.MarketType.*;
+import static com.fluent.etrading.framework.market.core.Marketplace.*;
 import static com.fluent.etrading.aggregator.core.SwapRowOrdinal.Ordinal.*;
 
 
@@ -30,7 +30,7 @@ public final class SwapRowOrdinal implements AggregateRowOrdinal{
 
     }
 
-    private static final MarketType AGG_TYPE = SWAP_SMART_ROUTER;
+    private static final Marketplace AGG_TYPE = SWAP_SMART_ROUTER;
 
 
     @Override
@@ -45,19 +45,19 @@ public final class SwapRowOrdinal implements AggregateRowOrdinal{
 
 
     @Override
-    public final MarketType[] getUnderlyingMarkets(){
+    public final Marketplace[] getUnderlyingMarkets(){
         return AGG_TYPE.getUnderlying( );
     }
 
 
     @Override
-    public final MarketType getAggregateMarketType(){
+    public final Marketplace getAggregateMarketType(){
         return AGG_TYPE;
     }
 
 
     @Override
-    public final MarketType getMarketFrom( final int rowIndex ){
+    public final Marketplace getMarketFrom( final int rowIndex ){
 
         switch( rowIndex ){
 
@@ -81,7 +81,7 @@ public final class SwapRowOrdinal implements AggregateRowOrdinal{
 
 
     @Override
-    public final int getRowIndex( final boolean isBid, final MarketType type ){
+    public final int getRowIndex( final boolean isBid, final Marketplace type ){
 
         switch( type ){
 

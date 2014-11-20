@@ -1,16 +1,16 @@
 package com.fluent.etrading.aggregator.core;
 
-import com.fluent.etrading.framework.market.core.MarketType;
+import com.fluent.etrading.framework.market.core.Marketplace;
 
 
 public interface AggregateRowOrdinal{
 
     public int getMarketCount();
     public int getValidRowCount();
-    public MarketType[] getUnderlyingMarkets();
-    public MarketType getAggregateMarketType();
+    public Marketplace[] getUnderlyingMarkets();
+    public Marketplace getAggregateMarketType();
 
-    public MarketType getMarketFrom( int rowIndex );
-    public int getRowIndex( boolean isBid, MarketType type );
+    public Marketplace getMarketFrom( int rowIndex );
+    public int getRowIndex( boolean isBid, Marketplace type );
 
 }

@@ -24,7 +24,7 @@ import static com.fluent.etrading.framework.events.core.FluentOutputEventType.*;
 public final class OrderExecutionManager implements FluentOutputEventListener, FluentService{
 
     private final LoopbackEventProvider provider;
-    private final Map<MarketType, OrderExecutor> executorMap;
+    private final Map<Marketplace, OrderExecutor> executorMap;
 
     private final static String NAME        = OrderExecutionManager.class.getSimpleName();
     private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
@@ -32,7 +32,7 @@ public final class OrderExecutionManager implements FluentOutputEventListener, F
 
     public OrderExecutionManager( LoopbackEventProvider provider, List<OrderExecutor> executorList ){
         this.provider       = provider;
-        this.executorMap    = new HashMap<MarketType, OrderExecutor>( executorList.size() );
+        this.executorMap    = new HashMap<Marketplace, OrderExecutor>( executorList.size() );
 
         for( OrderExecutor executor : executorList ){
             executorMap.put( executor.getMarketType(), executor );
@@ -62,7 +62,7 @@ public final class OrderExecutionManager implements FluentOutputEventListener, F
     public void update( final FluentOutputEvent outputEvent ){
 
         OrderEvent oEvent           = (OrderEvent) outputEvent;
-        MarketType type             = oEvent.getMarketType();
+        Marketplace type             = oEvent.getMarketType();
         OrderExecutor oExecutor     = executorMap.get( type );
 
         if( oExecutor != null ){
