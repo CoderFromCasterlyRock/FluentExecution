@@ -24,8 +24,10 @@
 
 
     <!-- INPUT Dispatcher-->
-    <bean id="InputPersistor" class="com.fluent.etrading.framework.persistence.FluentInputEventPersister" init-method="init" destroy-method="stop" />
-
+    <bean id="InputPersistor" class="com.fluent.etrading.framework.persistence.FluentInputEventPersister" init-method="init" destroy-method="stop">
+		<constructor-arg value="../../../logs/InputEventJournal" />
+	</bean>
+		
 	<bean id="InputBackoffStrategy" class="com.fluent.etrading.framework.dispatcher.core.BackoffStrategy">
 	 	<constructor-arg value="1" />
 	 	<constructor-arg value="NANOSECONDS" />
@@ -39,7 +41,9 @@
 
 
     <!-- OUTPUT Dispatcher -->
-    <bean id="OutputPersistor" class="com.fluent.etrading.framework.persistence.FluentOutputEventPersister" init-method="init" destroy-method="stop" />
+    <bean id="OutputPersistor" class="com.fluent.etrading.framework.persistence.FluentOutputEventPersister" init-method="init" destroy-method="stop">
+    	<constructor-arg value="../../../logs/OutputEventJournal" />
+	</bean>
 
     <bean id="OutputBackoffStrategy" class="com.fluent.etrading.framework.dispatcher.core.BackoffStrategy">
         <constructor-arg value="2" />
