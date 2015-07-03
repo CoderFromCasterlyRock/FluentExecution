@@ -2,9 +2,8 @@ package com.fluent.etrading.execution;
 
 import java.util.*;
 
-import com.fluent.etrading.framework.order.*;
-import com.fluent.etrading.framework.events.out.order.*;
-import com.fluent.etrading.aggregator.processor.*;
+import com.fluent.etrading.order.OrderEvent;
+import com.fluent.etrading.order.Side;
 
 
 public abstract class ExposureManager{
@@ -15,20 +14,22 @@ public abstract class ExposureManager{
     private final String instrumentId;
 
     private final double traderPrice;
-    private final Aggregator aggregator;
-    private final AggregateAllocationPolicy policy;
+  //  private final Aggregator aggregator;
+    //private final AggregateAllocationPolicy policy;
 
     private final Map<Long, OrderEvent> orderMap;
 
 
-    protected ExposureManager( long strategyId, Side side, String traderId, String instrumentId, double traderPrice, Aggregator aggregator, AggregateAllocationPolicy policy, Map<Long, OrderEvent> orderMap ){
+//    protected ExposureManager( long strategyId, Side side, String traderId, String instrumentId, double traderPrice, Aggregator aggregator, AggregateAllocationPolicy policy, Map<Long, OrderEvent> orderMap ){
+    protected ExposureManager( long strategyId, Side side, String traderId, String instrumentId, 
+    							double traderPrice, Map<Long, OrderEvent> orderMap ){
         this.strategyId 	= strategyId;
         this.side 			= side;
         this.traderId 		= traderId;
         this.instrumentId 	= instrumentId;
         this.traderPrice 	= traderPrice;
-        this.aggregator 	= aggregator;
-        this.policy 		= policy;
+     //  this.aggregator 	= aggregator;
+      //  this.policy 		= policy;
         this.orderMap 		= orderMap;
     }
     
@@ -58,14 +59,14 @@ public abstract class ExposureManager{
 	}
 
 
-    public final  Aggregator getAggregator( ){
-		return aggregator;
-	}
+//    public final  Aggregator getAggregator( ){
+//		return aggregator;
+//	}
 
 
-    public final  AggregateAllocationPolicy getPolicy( ){
-		return policy;
-	}
+//    public final  AggregateAllocationPolicy getPolicy( ){
+//		return policy;
+//	}
 
 
     public final  Map<Long, OrderEvent> getOrderMap( ){

@@ -4,16 +4,14 @@ import org.slf4j.*;
 
 import java.util.*;
 
-import com.fluent.etrading.framework.core.*;
-import com.fluent.etrading.framework.events.in.*;
-import com.fluent.etrading.framework.market.core.*;
-import com.fluent.etrading.framework.events.core.*;
-import com.fluent.etrading.framework.dispatcher.out.*;
-import com.fluent.etrading.framework.events.out.order.*;
-import com.fluent.etrading.framework.events.out.executor.*;
+import com.fluent.etrading.order.OrderEvent;
+import com.fluent.framework.core.*;
+import com.fluent.framework.events.in.*;
+import com.fluent.framework.market.*;
+import com.fluent.framework.events.core.*;
+import com.fluent.framework.events.out.*;
 
-import static com.fluent.etrading.framework.events.core.FluentOutputEventType.*;
-
+import static com.fluent.framework.events.out.OutboundType.*;
 
 /**
  * TODO:
@@ -21,10 +19,11 @@ import static com.fluent.etrading.framework.events.core.FluentOutputEventType.*;
  * How do we notify the Strategy?
  */
 
-public final class OrderExecutionManager implements FluentOutputEventListener, FluentService{
+/*
+public final class OrderExecutionManager implements OutboundListener, FluentService{
 
     private final LoopbackEventProvider provider;
-    private final Map<Marketplace, OrderExecutor> executorMap;
+    private final Map<Exchange, OrderExecutor> executorMap;
 
     private final static String NAME        = OrderExecutionManager.class.getSimpleName();
     private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
@@ -32,7 +31,7 @@ public final class OrderExecutionManager implements FluentOutputEventListener, F
 
     public OrderExecutionManager( LoopbackEventProvider provider, List<OrderExecutor> executorList ){
         this.provider       = provider;
-        this.executorMap    = new HashMap<Marketplace, OrderExecutor>( executorList.size() );
+        this.executorMap    = new HashMap<Exchange, OrderExecutor>( executorList.size() );
 
         for( OrderExecutor executor : executorList ){
             executorMap.put( executor.getMarketType(), executor );
@@ -46,43 +45,46 @@ public final class OrderExecutionManager implements FluentOutputEventListener, F
     }
 
     @Override
-    public boolean isSupported( final FluentOutputEventType type ){
+    public boolean isSupported( final OutboundType type ){
         return ( ORDER_TO_MARKET == type );
     }
 
     @Override
     public final void init( ){
-        OutputEventDispatcher.add( this );
+        
+    	OutboundEventDispatcher.register( this );
         LOGGER.info("Configured market executor for [{}].", executorMap.keySet() );
         LOGGER.info("Successfully started [{}], listening for [ORDER_TO_MARKET] event.", NAME  );
     }
 
 
     @Override
-    public void update( final FluentOutputEvent outputEvent ){
+    public final boolean update( final OutboundEvent outputEvent ){
 
         OrderEvent oEvent           = (OrderEvent) outputEvent;
-        Marketplace type             = oEvent.getMarketType();
+        Exchange type            	 = oEvent.getExchange();
         OrderExecutor oExecutor     = executorMap.get( type );
 
         if( oExecutor != null ){
             oExecutor.execute( provider, oEvent );
-            return;
+            return false;
         }
 
         String reason               = "No executor is configured for Market: " + type;
         LoopbackEvent loopEvent     = OrderExecutor.createInvalidReport( reason, oEvent );
 
         provider.addLoopbackEvent( loopEvent );
-
+        
+        return true;
     }
 
 
     @Override
     public void stop( ){
-        OutputEventDispatcher.remove( this );
+        OutboundEventDispatcher.deregister(this );
         LOGGER.info("Successfully stopped {}.", NAME );
     }
 
 
 }
+*/

@@ -1,23 +1,4 @@
+1. Get the file based Market data to work.
+(ability to read a file and play in market data).
 
-4. Recovery when the container restarts!
-Check if logic to set EventId is incorrect.
-Check if which input/output events should be played in.
-
-0. Get the loopback event to work.
-And how do we send input and output events to the chronicle for logging?
-( what should be the structure of the ResponeEvent)
-
-1. Set up TCP replication of logs for Chronicle.
-All the input and output events will be stored and replicated.
-Only use those MarketData events which are tested (used or unused) by a Strategy.
-
-2. Using fake market data, set up aggregation and smart order routing.
-
-3. Should StrategyManager also have reference to outbound dispatcher (it needs it to signal errors).
-Or should we have a responseManager which will have reference to outbound dispatcher.
-Strategy and StrategyManger can use its static method to send out Trader Updates?
-
-
-==================================================
-1. Set up ElasticSearch/Kibana and set up dashboard to track an Order.
-
+2. Do the same over a communication channel.

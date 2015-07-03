@@ -12,7 +12,6 @@
     <properties>
         <slf4j.version>1.7.5</slf4j.version>
         <logback.version>1.0.13</logback.version>
-        <spring.version>4.0.3.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -25,26 +24,13 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
  	
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-            <exclusions>
-                <!--
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                 -->
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+ 		<dependency>
+    		<groupId>com.typesafe</groupId>
+    		<artifactId>config</artifactId>
+    		<version>1.0.2</version>
+		</dependency>
+ 		
        
-       
-               
         <!--  TEST Related  -->
         <dependency>
             <groupId>junit</groupId>
