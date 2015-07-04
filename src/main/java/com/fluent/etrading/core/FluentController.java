@@ -2,14 +2,17 @@ package com.fluent.etrading.core;
 
 import org.slf4j.*;
 
-import com.fluent.etrading.config.AlgoConfigManager;
+import com.fluent.etrading.events.in.NewStrategyEvent;
 import com.fluent.etrading.market.core.MarketDataManager;
+import com.fluent.etrading.order.Side;
 import com.fluent.etrading.strategy.spreader.SpreadAlgoManager;
 import com.fluent.framework.admin.StateManager;
 import com.fluent.framework.admin.MetronomeEvent;
 import com.fluent.framework.core.FluentStartable;
 import com.fluent.framework.events.in.*;
 import com.fluent.framework.events.out.OutboundEventDispatcher;
+import com.fluent.framework.market.Exchange;
+import com.fluent.framework.market.InstrumentType;
 import com.fluent.framework.util.TimeUtil;
 
 import static com.fluent.framework.util.FluentUtil.*;
@@ -94,6 +97,9 @@ public final class FluentController implements InboundListener, FluentStartable{
             
         }
 
+		//TEST
+		sendNewTESTStrategy( );
+				
 	}
 	
 	
@@ -126,6 +132,41 @@ public final class FluentController implements InboundListener, FluentStartable{
 		outDispatcher.stop();
 		stateManager.stop();
 		
+	}
+	
+	
+	protected final void sendNewTESTStrategy( ){
+	
+		try{
+			Thread.sleep( 2000 );
+		}catch( InterruptedException e ){
+			e.printStackTrace();
+		}
+		
+		LOGGER.info(" =================================================");
+		LOGGER.info(" Sending TEST Strategy!");
+		LOGGER.info(" ================================================={}", NEWLINE);
+		
+		String strategyId			= "10.1";
+		String strategyName			= "EDSpread";
+		String strategyTrader		= "visingh";
+		Side strategySide			= Side.BUY;
+	    int strategyLegCount		= 2;
+	    Exchange strategyExchange	= Exchange.CME;
+	    double strategySpread		= 0.15;
+	    
+	    int[] legQtys				= {100, 200};
+	    Side[] legSides				= {Side.BUY, Side.SELL};
+	    String[] legInstruments		= {"EDH6", "EDM6"};
+	    boolean[] legWorking		= {true, false};
+	    int[] legSlices				= {10, 20};
+	    InstrumentType[] legTypes	= {InstrumentType.ED_FUTURES, InstrumentType.ED_FUTURES};
+	    	    
+		
+		InboundEvent newStratgey 	= new NewStrategyEvent( strategyId, strategyName, strategyTrader, strategySide, strategyLegCount, strategyExchange, strategySpread,
+															legQtys, legSides, legInstruments, legWorking, legSlices, legTypes );
+		InboundEventDispatcher.enqueue( newStratgey );
+	
 	}
 	
 	

@@ -1,4 +1,4 @@
-package com.fluent.etrading.market.adaptor;
+package com.fluent.etrading.market.core;
 
 import org.slf4j.*;
 

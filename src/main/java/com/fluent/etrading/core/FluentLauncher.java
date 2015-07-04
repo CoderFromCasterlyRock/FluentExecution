@@ -1,9 +1,7 @@
 package com.fluent.etrading.core;
 
 import org.slf4j.*;
-
 import java.lang.Thread.*;
-import com.fluent.etrading.config.*;
 
 
 public final class FluentLauncher{

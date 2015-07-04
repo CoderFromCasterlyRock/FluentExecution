@@ -1,4 +1,4 @@
-package com.fluent.etrading.reference;
+package com.fluent.etrading.events.in;
 
 import com.eclipsesource.json.JsonObject;
 import com.fluent.framework.events.core.*;

@@ -1,4 +1,4 @@
-package com.fluent.etrading.config;
+package com.fluent.etrading.core;
 
 import java.util.*;
 

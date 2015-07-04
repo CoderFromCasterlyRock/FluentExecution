@@ -153,4 +153,24 @@ public final class JSONUtil{
         return jArray;
     }
 
+    
+    public final static JsonArray convertFromBoolArray( boolean[] array ){
+        JsonArray jArray   = new JsonArray(  );
+        for( boolean i : array ){
+            jArray.add( i );
+        }
+        return jArray;
+    }
+    
+    
+    public final static JsonArray convertFromInstrumentTypesArray( InstrumentType[] array ){
+        JsonArray jArray   = new JsonArray(  );
+        for( InstrumentType i : array ){
+            jArray.add( i.name() );
+        }
+        return jArray;
+    }
+    
+    
+    
 }

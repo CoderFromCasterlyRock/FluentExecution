@@ -3,8 +3,6 @@ package com.fluent.etrading.strategy.core;
 import com.fluent.framework.core.*;
 import com.fluent.framework.events.in.*;
 
-import static com.fluent.framework.util.FluentUtil.*;
-
 
 public abstract class AbstractAlgo implements FluentService{
 
@@ -40,9 +38,9 @@ public abstract class AbstractAlgo implements FluentService{
 
 
 
-    protected final boolean marketUpdateRequired( String instrument, String[] instruments ){
-        for( String strategyInstrument : instruments ){
-            if( strategyInstrument.equalsIgnoreCase( instrument )){
+    protected final boolean marketUpdateRequired( String instrument, String[] legInstruments ){
+        for( String legInstrument : legInstruments ){
+            if( legInstrument.equalsIgnoreCase( instrument )){
                 return true;
             }
         }

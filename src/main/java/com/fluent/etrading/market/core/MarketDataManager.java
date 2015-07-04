@@ -1,12 +1,12 @@
 package com.fluent.etrading.market.core;
 
 import org.slf4j.*;
+
 import java.util.*;
 
 import com.fluent.framework.core.*;
-import com.fluent.etrading.config.*;
+import com.fluent.etrading.core.*;
 import com.fluent.framework.market.*;
-import com.fluent.etrading.market.adaptor.*;
 import com.typesafe.config.Config;
 
 import static com.fluent.framework.util.FluentPreconditions.*;

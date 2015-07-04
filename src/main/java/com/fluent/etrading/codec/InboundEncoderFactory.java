@@ -1,10 +1,12 @@
 package com.fluent.etrading.codec;
 
 import java.util.*;
+
 import org.slf4j.*;
 
 import com.fluent.framework.market.*;
 import com.fluent.framework.events.in.*;
+import com.fluent.etrading.events.in.MarketDataEvent;
 import com.fluent.etrading.market.core.*;
 
 import static com.fluent.framework.util.FluentUtil.*;

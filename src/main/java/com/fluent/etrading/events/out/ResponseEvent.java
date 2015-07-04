@@ -1,4 +1,4 @@
-package com.fluent.etrading.response;
+package com.fluent.etrading.events.out;
 
 import com.eclipsesource.json.*;
 import com.fluent.framework.events.core.*;

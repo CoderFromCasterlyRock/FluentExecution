@@ -3,22 +3,18 @@ package com.fluent.etrading.strategy.spreader;
 import org.slf4j.*;
 import org.cliffc.high_scale_lib.*;
 
-import com.fluent.etrading.config.*;
-import com.fluent.etrading.execution.ExecutionReportEvent;
-import com.fluent.etrading.request.*;
-import com.fluent.etrading.strategy.core.*;
-import com.fluent.framework.admin.StateManager;
-import com.fluent.framework.events.core.FluentEventCategory;
-import com.fluent.framework.events.in.InboundEvent;
-import com.fluent.framework.events.in.InboundEventDispatcher;
-import com.fluent.framework.events.in.InboundType;
+import com.fluent.framework.admin.*;
+import com.fluent.framework.core.*;
+import com.fluent.etrading.core.*;
+import com.fluent.etrading.events.in.*;
+import com.fluent.etrading.events.out.*;
+import com.fluent.framework.events.in.*;
+import com.fluent.framework.events.core.*;
+
+import static com.fluent.framework.util.TimeUtil.*;
 
 
-
-import static com.fluent.framework.util.FluentUtil.*;
-
-
-public final class SpreadAlgoManager extends AbstractAlgoManager{
+public final class SpreadAlgoManager implements InboundListener, FluentService{
 
 	private final AlgoConfigManager cfgManager;
     private final NonBlockingHashMap<String, SpreadAlgo> strategyMap;
@@ -47,6 +43,12 @@ public final class SpreadAlgoManager extends AbstractAlgoManager{
 		
 	}
 
+	
+    @Override
+    public final boolean isSupported( final InboundType type ){
+        return ( FluentEventCategory.INPUT.contains(type.getCategory()) );
+    }
+    
 
     @Override
     public final void init( ){
@@ -68,21 +70,18 @@ public final class SpreadAlgoManager extends AbstractAlgoManager{
         switch( type ){
 
             case METRONOME_EVENT:
-                handleInternal( inputEvent );
-            break;
-
-            case LOOPBACK_EVENT:
-                handleLoopback( inputEvent );
+                //handleInternal( inputEvent );
             break;
 
             case NEW_STRATEGY:
-                createStrategy( inputEvent );
+                handleNewStrategy( inputEvent );
             break;
 
             case MODIFY_STRATEGY:
             break;
 
             case CANCEL_STRATEGY:
+            	handleCancelStrategy( inputEvent );
             break;
 
             case CANCEL_ALL_STRATEGY:
@@ -104,51 +103,49 @@ public final class SpreadAlgoManager extends AbstractAlgoManager{
         
     }
 
-    
 
-    protected final void handleInternal( final InboundEvent inputEvent ){
-        LOGGER.warn( "Unprocessed >> {} ", inputEvent );
-    }
-
-
-    protected final void handleLoopback( final InboundEvent inputEvent ){
-    	LOGGER.warn( "Unprocessed >> {} ", inputEvent );
-    }
-
-
-    protected final void createStrategy( final InboundEvent inputEvent ){
-
-        boolean started     = false;
-        String message      = EMPTY;
-        String strategyId	= EMPTY;
+    protected final void handleNewStrategy( final InboundEvent inputEvent ){
 
         try{
 
+        	LOGGER.info( "Received a NEW Strategy [{}].", inputEvent.toJSON() );
+        	
         	NewStrategyEvent tEvent  	= (NewStrategyEvent) inputEvent;
-            strategyId                  = tEvent.getEventId();
+        	String strategyId           = tEvent.getStrategyId();
             SpreadAlgo strategy         = new SpreadAlgo( strategyId, tEvent );
 
-            if( strategy != null ){
-                strategy.init();
-
-                strategyMap.put( strategyId, strategy );
-                started = true;
-            }
-
+            strategyMap.put( strategyId, strategy );
+            strategy.init();
+            strategy.update( inputEvent );
+            
         }catch( Exception e ){
-            message = "Internal Error! Failed to start Strategy Id:" + strategyId;
-            LOGGER.warn( message );
-            LOGGER.warn("Exception:", e );
-
-        }finally{
-            if( !started ){
-                LOGGER.warn("Failed to start Strategy, Trader must be updated!");
-                //getOutDispatcher().addResponseEvent( nextOutputEventId(), inputEvent, message );
-            }
+            LOGGER.warn( "Failed to created Strategy Id:" + inputEvent.toJSON(), e );
         }
 
     }
 
+    
+    protected final void handleCancelStrategy( final InboundEvent inputEvent ){
+
+        try{
+
+        	CancelStrategyEvent tEvent  = (CancelStrategyEvent) inputEvent;
+        	String strategyId           = tEvent.getStrategyId();
+            
+        	SpreadAlgo strategy			= strategyMap.get( strategyId );
+        	if( strategy == null ){
+        		LOGGER.warn( "Discarding request to CANCEL as Strategy for StrategyId: [{}] is missing.", strategyId );
+        		return;
+        	}
+        	
+            strategy.update( inputEvent );
+            
+        }catch( Exception e ){
+            LOGGER.warn( "Failed to cancel Strategy Id:" + inputEvent.toJSON(), e );
+        }
+
+    }
+    
 
     protected final void handleExecutionReport( final InboundEvent inputEvent ){
         ExecutionReportEvent eReport    = (ExecutionReportEvent) inputEvent;
@@ -163,7 +160,8 @@ public final class SpreadAlgoManager extends AbstractAlgoManager{
 
     protected final void handleMarketMessage( final InboundEvent inputEvent ){
     	
-    	LOGGER.debug("MD arrived {}", inputEvent );
+    	long latencyMicros	= (currentNanos() - inputEvent.getCreationTime())/1000;
+    	LOGGER.debug("Latency [{}] micros, MD arrived {}", latencyMicros, inputEvent );
     	 
         for( SpreadAlgo strategy : strategyMap.values() ){
             strategy.update( inputEvent );

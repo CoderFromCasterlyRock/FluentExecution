@@ -1,4 +1,4 @@
-package com.fluent.etrading.market.core;
+package com.fluent.etrading.events.in;
 
 import com.eclipsesource.json.*;
 import com.fluent.framework.market.*;
