@@ -11,7 +11,7 @@ import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
 
-public final class NewStrategyEvent extends InboundEvent{
+public final class NewStrategyEvent extends InEvent{
 
 	private final String eventId;
 	private final String strategyId;
@@ -36,7 +36,7 @@ public final class NewStrategyEvent extends InboundEvent{
     public NewStrategyEvent( String strategyId, String strategyName, String strategyTrader, Side strategySide, int strategyLegCount, Exchange strategyExchange, double strategySpread,
                              int[] legQtys, Side[] legSides, String[] legInstruments, boolean[] legWorking, int[] legSlices, InstrumentType[] legTypes ){
 
-        super( InboundType.NEW_STRATEGY );
+        super( InType.NEW_STRATEGY );
 
         this.strategyId			= strategyId;
         this.strategyTrader     = strategyTrader;

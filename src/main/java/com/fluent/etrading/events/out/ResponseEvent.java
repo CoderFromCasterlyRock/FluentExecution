@@ -2,13 +2,13 @@ package com.fluent.etrading.events.out;
 
 import com.eclipsesource.json.*;
 import com.fluent.framework.events.core.*;
-import com.fluent.framework.events.out.OutboundEvent;
+import com.fluent.framework.events.out.OutEvent;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.out.OutboundType.*;
+import static com.fluent.framework.events.out.OutType.*;
 
 
-public final class ResponseEvent extends OutboundEvent{
+public final class ResponseEvent extends OutEvent{
 
 	private final String eventId;
 	private final String strategyId;

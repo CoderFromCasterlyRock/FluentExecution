@@ -9,21 +9,23 @@ import com.fluent.framework.events.in.*;
 import com.fluent.framework.events.core.*;
 import com.fluent.framework.transport.core.*;
 
-import static com.fluent.framework.events.in.InboundType.*;
+import static com.fluent.framework.events.in.InType.*;
 
 
-public final class MarketDataAdapter implements FluentDataListener, FluentStartable{
+public final class MarketDataAdapter implements FluentDataListener, FluentService{
 	
 	private final ExchangeInfo eInfo;
 	private final Transport transport;
-			 
+	private final InEventDispatcher inDispatcher;
+	
 	private final static String NAME		= MarketDataAdapter.class.getSimpleName();
 	private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
 
 	
-	public MarketDataAdapter( ExchangeInfo eInfo ){
-		this.eInfo		= eInfo;
-		this.transport	= TransportFactory.create( eInfo );
+	public MarketDataAdapter( ExchangeInfo eInfo, InEventDispatcher inDispatcher ){
+		this.eInfo			= eInfo;
+		this.inDispatcher	= inDispatcher;
+		this.transport		= TransportFactory.create( eInfo );
 						
 	}
 	
@@ -35,9 +37,9 @@ public final class MarketDataAdapter implements FluentDataListener, FluentStarta
 
 	
 	@Override
-	public void init( ){
+	public void start( ){
 		transport.register( this );
-		transport.init();
+		transport.start();
 		LOGGER.info("Successfully started market data provider for [{}].", name() );
 	}
 	
@@ -49,10 +51,10 @@ public final class MarketDataAdapter implements FluentDataListener, FluentStarta
 	
 	@Override
 	public final void onMessage( String message ){
-		InboundEvent mdEvent 	= InboundEncoderFactory.create( MARKET_DATA, message );
+		InEvent mdEvent 	= InboundEncoderFactory.create( MARKET_DATA, message );
 		if( mdEvent == null ) return;
 		
-		InboundEventDispatcher.enqueue( mdEvent );
+		inDispatcher.enqueue( mdEvent );
 	}
 	
 

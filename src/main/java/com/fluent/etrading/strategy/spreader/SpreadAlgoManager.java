@@ -9,14 +9,19 @@ import com.fluent.etrading.core.*;
 import com.fluent.etrading.events.in.*;
 import com.fluent.etrading.events.out.*;
 import com.fluent.framework.events.in.*;
+import com.fluent.framework.events.out.OutEvent;
+import com.fluent.framework.events.out.OutEventDispatcher;
 import com.fluent.framework.events.core.*;
+import com.fluent.framework.persistence.PersisterService;
 
 import static com.fluent.framework.util.TimeUtil.*;
 
 
-public final class SpreadAlgoManager implements InboundListener, FluentService{
+public final class SpreadAlgoManager implements InListener, FluentService{
 
 	private final AlgoConfigManager cfgManager;
+	private final InEventDispatcher inDispatcher;
+	private final OutEventDispatcher outDispatcher;
     private final NonBlockingHashMap<String, SpreadAlgo> strategyMap;
 
     private final static String NAME        = SpreadAlgoManager.class.getSimpleName();
@@ -24,9 +29,11 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
 
 
     //public SpreadAlgoManager( AlgoConfigManager cfgManager, SpreadAlgoFactory factory ){
-    public SpreadAlgoManager( AlgoConfigManager cfgManager ){
+    public SpreadAlgoManager( AlgoConfigManager cfgManager, InEventDispatcher inDispatcher, OutEventDispatcher outDispatcher ){
         
         this.cfgManager		= cfgManager;
+        this.inDispatcher	= inDispatcher;
+        this.outDispatcher	= outDispatcher;
         this.strategyMap	= new NonBlockingHashMap<>( );
 
     }
@@ -37,35 +44,29 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
         return NAME;
     }
     
-    
-	@Override
-	public final void prime( ){
-		
-	}
-
 	
     @Override
-    public final boolean isSupported( final InboundType type ){
+    public final boolean isSupported( final InType type ){
         return ( FluentEventCategory.INPUT.contains(type.getCategory()) );
     }
     
 
     @Override
-    public final void init( ){
-        InboundEventDispatcher.register( this );
+    public final void start( ){
+        inDispatcher.register( this );
         LOGGER.info("[{}] initialized, listening for [{}].", NAME, FluentEventCategory.allInputs() );
     }
 
 
     @Override
-    public final boolean update( final InboundEvent inputEvent ){
+    public final boolean update( final InEvent inputEvent ){
 
     	if( !StateManager.isRunning() ){
     		LOGGER.warn("Discarding event [{}] as we are currently in [{}] state!", inputEvent, StateManager.getState() );
     		return false;
     	}
     	
-    	InboundType type 	= inputEvent.getType( );
+    	InType type 	= inputEvent.getType( );
 
         switch( type ){
 
@@ -104,7 +105,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
     }
 
 
-    protected final void handleNewStrategy( final InboundEvent inputEvent ){
+    protected final void handleNewStrategy( final InEvent inputEvent ){
 
         try{
 
@@ -115,7 +116,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
             SpreadAlgo strategy         = new SpreadAlgo( strategyId, tEvent );
 
             strategyMap.put( strategyId, strategy );
-            strategy.init();
+            strategy.start();
             strategy.update( inputEvent );
             
         }catch( Exception e ){
@@ -125,7 +126,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
     }
 
     
-    protected final void handleCancelStrategy( final InboundEvent inputEvent ){
+    protected final void handleCancelStrategy( final InEvent inputEvent ){
 
         try{
 
@@ -147,7 +148,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
     }
     
 
-    protected final void handleExecutionReport( final InboundEvent inputEvent ){
+    protected final void handleExecutionReport( final InEvent inputEvent ){
         ExecutionReportEvent eReport    = (ExecutionReportEvent) inputEvent;
 
         String strategyId                = eReport.getEventId();
@@ -158,7 +159,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
     }
 
 
-    protected final void handleMarketMessage( final InboundEvent inputEvent ){
+    protected final void handleMarketMessage( final InEvent inputEvent ){
     	
     	long latencyMicros	= (currentNanos() - inputEvent.getCreationTime())/1000;
     	LOGGER.debug("Latency [{}] micros, MD arrived {}", latencyMicros, inputEvent );
@@ -186,7 +187,7 @@ public final class SpreadAlgoManager implements InboundListener, FluentService{
 
     @Override
     public final void stop(){
-        InboundEventDispatcher.deregister( this );
+        inDispatcher.deregister( this );
         LOGGER.info("Stopped [{}].", NAME );
     }
 

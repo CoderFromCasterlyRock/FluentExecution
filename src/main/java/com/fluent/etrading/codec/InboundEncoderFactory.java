@@ -6,10 +6,9 @@ import org.slf4j.*;
 
 import com.fluent.framework.market.*;
 import com.fluent.framework.events.in.*;
-import com.fluent.etrading.events.in.MarketDataEvent;
-import com.fluent.etrading.market.core.*;
 
 import static com.fluent.framework.util.FluentUtil.*;
+import static com.fluent.framework.util.FluentToolkit.*;
 
 
 public final class InboundEncoderFactory{
@@ -18,9 +17,9 @@ public final class InboundEncoderFactory{
 	private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
 	
 	
-	public final static InboundEvent create( InboundType type, String message ){
+	public final static InEvent create( InType type, String message ){
 		
-		InboundEvent event 	= null;
+		InEvent event 	= null;
 		
 		try{
 		
@@ -45,7 +44,7 @@ public final class InboundEncoderFactory{
 
 	
 	//CME:EDZ5:97.59:1000:98.41:1200
-	protected final static InboundEvent createMdEvent( String message ){
+	protected final static InEvent createMdEvent( String message ){
 	
 		List<String> data		= fastSplit(message, COLON_CHAR);
 		

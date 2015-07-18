@@ -1,16 +1,14 @@
 package com.fluent.etrading.market;
 
-import java.io.*;
 import org.slf4j.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 import com.fluent.etrading.util.ExecUtil;
-import com.fluent.framework.events.core.*;
+import com.fluent.framework.collection.FluentThreadFactory;
 import com.fluent.framework.market.*;
 import com.fluent.framework.transport.core.AbstractTransport;
 import com.fluent.framework.transport.core.TransportType;
-import com.fluent.framework.util.FluentThreadFactory;
 
 import static com.fluent.framework.util.FluentUtil.*;
 
@@ -58,7 +56,7 @@ public final class GeneratedMarketDataTransport extends AbstractTransport implem
 	
     
     @Override
-    public final void init( ){
+    public final void start( ){
         executor.scheduleAtFixedRate( this, frequency, frequency, timeUnit );
         LOGGER.warn( "Successfully started will publish FAKE prices for {} every {} {}.",  Arrays.deepToString(instruments), frequency, timeUnit );
     }
@@ -141,7 +139,7 @@ public final class GeneratedMarketDataTransport extends AbstractTransport implem
 			}
 		});
     	*/
-    	tport.init();
+    	tport.start();
     	Thread.sleep( howLongInSeconds * 1000 );
     	
     	tport.stop();

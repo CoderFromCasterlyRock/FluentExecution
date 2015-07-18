@@ -6,12 +6,12 @@ import com.fluent.framework.market.*;
 import com.fluent.framework.events.in.*;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.in.InboundType.*;
+import static com.fluent.framework.events.in.InType.*;
 import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.util.TimeUtil.*;
 
 
-public final class ExecutionReportEvent extends InboundEvent{
+public final class ExecutionReportEvent extends InEvent{
 
     private final boolean isRejected;
 

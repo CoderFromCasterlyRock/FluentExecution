@@ -8,26 +8,33 @@ import com.fluent.etrading.order.Side;
 import com.fluent.etrading.strategy.spreader.SpreadAlgoManager;
 import com.fluent.framework.admin.StateManager;
 import com.fluent.framework.admin.MetronomeEvent;
-import com.fluent.framework.core.FluentStartable;
+import com.fluent.framework.core.FluentService;
 import com.fluent.framework.events.in.*;
-import com.fluent.framework.events.out.OutboundEventDispatcher;
+import com.fluent.framework.events.out.OutEvent;
+import com.fluent.framework.events.out.OutEventDispatcher;
 import com.fluent.framework.market.Exchange;
 import com.fluent.framework.market.InstrumentType;
+import com.fluent.framework.persistence.InChroniclePersisterService;
+import com.fluent.framework.persistence.OutChroniclePersisterService;
+import com.fluent.framework.persistence.PersisterService;
 import com.fluent.framework.util.TimeUtil;
 
 import static com.fluent.framework.util.FluentUtil.*;
-import static com.fluent.framework.events.in.InboundType.*;
+import static com.fluent.framework.events.in.InType.*;
 import static com.fluent.framework.core.FluentContext.FluentState.*;
 
 
-public final class FluentController implements InboundListener, FluentStartable{
+public final class FluentController implements InListener, FluentService{
 	
 	private final AlgoConfigManager cfgManager;
 	private final StateManager stateManager;
 	private final MarketDataManager mdManager;
 	
-	private final InboundEventDispatcher inDispatcher;
-	private final OutboundEventDispatcher outDispatcher;
+	private final PersisterService<InEvent> inPersister;
+	private final InEventDispatcher inDispatcher;
+	
+	private final PersisterService<OutEvent> outPersister;
+	private final OutEventDispatcher outDispatcher;
 	
 	private final SpreadAlgoManager algoManager;
 		
@@ -35,17 +42,19 @@ public final class FluentController implements InboundListener, FluentStartable{
     private final static Logger LOGGER	= LoggerFactory.getLogger( NAME );
 
     
-	public FluentController( AlgoConfigManager cfgManager ){
+	public FluentController( AlgoConfigManager cfgManager ) throws Exception{
 		
 		this.cfgManager		= cfgManager;
-		this.stateManager	= new StateManager( cfgManager );
+				
+		this.inPersister	= new InChroniclePersisterService(cfgManager);
+		this.inDispatcher	= new InEventDispatcher( inPersister );
 		
-		this.inDispatcher	= new InboundEventDispatcher( );
-		this.mdManager		= new MarketDataManager( cfgManager );
+		this.outPersister	= new OutChroniclePersisterService(cfgManager);
+		this.outDispatcher	= new OutEventDispatcher( outPersister );
 		
-		this.outDispatcher	= new OutboundEventDispatcher( );
-		
-		this.algoManager	= new SpreadAlgoManager( cfgManager );
+		this.stateManager	= new StateManager( cfgManager, inDispatcher );
+		this.mdManager		= new MarketDataManager( cfgManager, inDispatcher );
+		this.algoManager	= new SpreadAlgoManager( cfgManager, inDispatcher, outDispatcher);
 		
 	}
 
@@ -57,20 +66,20 @@ public final class FluentController implements InboundListener, FluentStartable{
 	
 	
 	@Override
-	public final boolean isSupported( InboundType type ){
+	public final boolean isSupported( InType type ){
 		return METRONOME_EVENT == type;
 	}
 
 
 	@Override
-	public final boolean update( InboundEvent event ){
+	public final boolean update( InEvent event ){
 		handleMetronomeEvent( event );
 		return false;
 	}
 	
 
 	@Override
-	public final void init( ){
+	public final void start( ){
 				
 		try{
 		
@@ -79,7 +88,6 @@ public final class FluentController implements InboundListener, FluentStartable{
 			StateManager.setState( INITIALIZING );
 			LOGGER.debug("Attempting to START Fluent Framework {}.", StateManager.getFrameworkInfo() );
 			LOGGER.debug("Configurations {}", cfgManager );
-			primeServices( );
 			startServices( );
 			
 			StateManager.setState( RUNNING );
@@ -102,23 +110,17 @@ public final class FluentController implements InboundListener, FluentStartable{
 				
 	}
 	
-	
-	protected final void primeServices( ){
-		outDispatcher.prime();
-		inDispatcher.prime();
-	}
-
-	
+		
 	protected final void startServices( ){
 		
-		InboundEventDispatcher.register( this );
+		inDispatcher.register( this );
 		
-		outDispatcher.init();
-		inDispatcher.init();
-		stateManager.init();
+		outDispatcher.start();
+		inDispatcher.start();
+		stateManager.start();
 		
-		algoManager.init();
-		mdManager.init();
+		algoManager.start();
+		mdManager.start();
 	}
 	
 	
@@ -163,15 +165,15 @@ public final class FluentController implements InboundListener, FluentStartable{
 	    InstrumentType[] legTypes	= {InstrumentType.ED_FUTURES, InstrumentType.ED_FUTURES};
 	    	    
 		
-		InboundEvent newStratgey 	= new NewStrategyEvent( strategyId, strategyName, strategyTrader, strategySide, strategyLegCount, strategyExchange, strategySpread,
+		InEvent newStratgey 	= new NewStrategyEvent( strategyId, strategyName, strategyTrader, strategySide, strategyLegCount, strategyExchange, strategySpread,
 															legQtys, legSides, legInstruments, legWorking, legSlices, legTypes );
-		InboundEventDispatcher.enqueue( newStratgey );
+		inDispatcher.enqueue( newStratgey );
 	
 	}
 	
 	
 	//TODO: Convert Seconds to close to AfterHours, WorkingHOurs, ClosingHours enum?
-	protected final void handleMetronomeEvent( InboundEvent event ){
+	protected final void handleMetronomeEvent( InEvent event ){
 		
 		MetronomeEvent metroEvent 	= (MetronomeEvent) event;
 		long secondsToClose			= metroEvent.getSecondsToClose();

@@ -1,14 +1,14 @@
 package com.fluent.etrading.order;
 
 import com.eclipsesource.json.JsonObject;
-import com.fluent.framework.events.out.OutboundEvent;
+import com.fluent.framework.events.out.OutEvent;
 import com.fluent.framework.market.*;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.out.OutboundType.*;
+import static com.fluent.framework.events.out.OutType.*;
 
 
-public final class OrderEvent extends OutboundEvent{
+public final class OrderEvent extends OutEvent{
 
 	private final String eventId;
     private final String strategyId;

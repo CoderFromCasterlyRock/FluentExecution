@@ -1,6 +1,7 @@
 package com.fluent.etrading.core;
 
 import org.slf4j.*;
+
 import java.lang.Thread.*;
 
 
@@ -22,13 +23,13 @@ public final class FluentLauncher{
 	}
 
     
-	public static void main( String args [] ){
+	public static void main( String args [] ) throws Exception{
 
 		AlgoConfigManager config 	= new AlgoConfigManager( );
        	FluentController controller	= new FluentController( config );
        	
        	Runtime.getRuntime().addShutdownHook( new FluentShutdownThread(controller) );
-       	controller.init();
+       	controller.start();
 
     }
 

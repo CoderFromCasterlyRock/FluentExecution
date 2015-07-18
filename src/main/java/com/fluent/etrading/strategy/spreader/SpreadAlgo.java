@@ -1,10 +1,13 @@
 package com.fluent.etrading.strategy.spreader;
 
 import org.slf4j.*;
+
 import java.util.*;
 import java.util.concurrent.*;
+
 import org.jctools.queues.*;
 
+import com.fluent.framework.market.MarketDataEvent;
 import com.fluent.framework.util.*;
 import com.fluent.etrading.order.*;
 import com.fluent.etrading.events.in.*;
@@ -23,7 +26,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
     private final String[] instruments;
     private final ExecutorService service;
-    private final SpscArrayQueue<InboundEvent> queue;
+    private final SpscArrayQueue<InEvent> queue;
     private final Map<String, MarketDataEvent> priceMap;
 
     private final static Logger LOGGER      =  LoggerFactory.getLogger( SpreadAlgo.class.getSimpleName() );
@@ -35,7 +38,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
         this.instruments    = strategy.getInstruments();
         this.priceMap       = new HashMap<String, MarketDataEvent>( FOUR );
-        this.queue          = new SpscArrayQueue<InboundEvent>( FOUR * SIXTY_FOUR );
+        this.queue          = new SpscArrayQueue<InEvent>( FOUR * SIXTY_FOUR );
         this.service        = Executors.newSingleThreadExecutor( new FluentThreadFactory( getStrategyName() ) );
         this.state			= AlgoState.CREATED;
         
@@ -46,16 +49,10 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     public final String name( ){
         return getStrategyName();
     }
-    
-    
-	@Override
-	public final void prime( ){
-		
-	}
 
 
     @Override
-    public final void init( ){
+    public final void start( ){
         keepRunning = true;
         service.execute( this );
 
@@ -69,7 +66,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     
 
     @Override
-    public final void update( InboundEvent event ){
+    public final void update( InEvent event ){
         queue.offer( event );
     }
 
@@ -81,7 +78,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
             try{
 
-            	InboundEvent event = queue.poll();
+            	InEvent event = queue.poll();
                 if( event == null ){
                     FluentBackoffStrategy.apply();
                     continue;
@@ -98,9 +95,9 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     }
 
 
-    protected final void handleEvent( InboundEvent event ){
+    protected final void handleEvent( InEvent event ){
 
-        InboundType type	= event.getType();
+        InType type	= event.getType();
 
         switch( type ){
 
@@ -131,7 +128,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     }
 
 
-     protected void handleMarketData( InboundEvent event ){
+     protected void handleMarketData( InEvent event ){
 
         MarketDataEvent mdEvent	= (MarketDataEvent) event;
         String instrument	    = mdEvent.getSymbol();
@@ -144,18 +141,18 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
      
      
      
-     protected void handleNewStrategy( InboundEvent event ){
+     protected void handleNewStrategy( InEvent event ){
       	LOGGER.debug( "NEW STARTEGY EXECUTE!");
       }
      
      
-     protected void handleCancelStrategy( InboundEvent event ){
+     protected void handleCancelStrategy( InEvent event ){
      	LOGGER.debug( "handleCancelStrategy is unsupported!");
      }
      
 
 
-    protected void handleExecutionReport( InboundEvent event ){
+    protected void handleExecutionReport( InEvent event ){
 
         ExecutionReportEvent eReport    = (ExecutionReportEvent) event;
         String orderId                  = eReport.getOrderId();

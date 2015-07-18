@@ -4,31 +4,28 @@ import org.slf4j.*;
 
 import java.util.concurrent.*;
 
-import com.fluent.etrading.events.in.MarketDataEvent;
 import com.fluent.etrading.market.core.*;
-import com.fluent.framework.core.FluentStartable;
-import com.fluent.framework.events.in.InboundEventDispatcher;
+import com.fluent.framework.core.FluentService;
+import com.fluent.framework.events.in.InEventDispatcher;
 import com.fluent.framework.market.*;
 import com.fluent.framework.util.TimeUtil;
-import com.google.common.util.concurrent.RateLimiter;
 
 import static com.fluent.framework.util.FluentUtil.*;
 
 
-public final class DummyThrottledMDProducer implements Runnable, FluentStartable{
+public final class DummyThrottledMDProducer implements Runnable, FluentService{
 
 	private final long timeToRun;
 	private final long productionRate;
-	private final RateLimiter rateLimiter;
 	private final Exchange marketType;
-    private final InboundEventDispatcher dispatcher;
+    private final InEventDispatcher dispatcher;
     
     private final static String NAME    = DummyThrottledMDProducer.class.getSimpleName();
     private final static Logger LOGGER  = LoggerFactory.getLogger( NAME );
     private final static String[] INS   = { "2_YEAR", "3_YEAR", "5_YEAR", "7_YEAR", "10_YEAR", "30_YEAR" };
 
 
-    public DummyThrottledMDProducer( long timeToRun, long productionRate, InboundEventDispatcher dispatcher ){
+    public DummyThrottledMDProducer( long timeToRun, long productionRate, InEventDispatcher dispatcher ){
     	this( Exchange.BTEC, timeToRun, TimeUnit.SECONDS, productionRate, TimeUnit.SECONDS, dispatcher );
     }
     
@@ -38,14 +35,13 @@ public final class DummyThrottledMDProducer implements Runnable, FluentStartable
                                         	TimeUnit runUnit,
                                         	long productionRate,
                                         	TimeUnit rateUnit,
-                                        	InboundEventDispatcher dispatcher ){
+                                        	InEventDispatcher dispatcher ){
 
         this.marketType     = marketType;
         this.dispatcher     = dispatcher;
         this.timeToRun		= TimeUnit.SECONDS.convert( timeToRun, runUnit );
         this.productionRate	= TimeUnit.SECONDS.convert( productionRate, rateUnit );
-                
-        this.rateLimiter	= RateLimiter.create(productionRate);
+        
     }
     
 
@@ -56,7 +52,7 @@ public final class DummyThrottledMDProducer implements Runnable, FluentStartable
 
     
     @Override
-    public final void init( ){
+    public final void start( ){
         LOGGER.info( "Configured {}, will publish FAKE prices for {} seconds at the rate of {} events per second.{}", NAME, timeToRun, productionRate, NEWLINE );
     }
 
@@ -70,7 +66,8 @@ public final class DummyThrottledMDProducer implements Runnable, FluentStartable
 
 		while( TimeUtil.currentMillis() < durationToRunAsMillis ){
     	
-			rateLimiter.acquire();
+			//TODO:
+			//USE YIELD TO throrrlee
 
 	    	String instrument		= INS[0];
 			double bid0             = 100.0;

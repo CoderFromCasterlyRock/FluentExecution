@@ -2,14 +2,14 @@ package com.fluent.etrading.events.in;
 
 import com.eclipsesource.json.JsonObject;
 import com.fluent.framework.events.core.*;
-import com.fluent.framework.events.in.InboundEvent;
+import com.fluent.framework.events.in.InEvent;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.in.InboundType.*;
+import static com.fluent.framework.events.in.InType.*;
 import static com.fluent.framework.util.FluentUtil.*;
 
 
-public final class ReferenceDataEvent extends InboundEvent{
+public final class ReferenceDataEvent extends InEvent{
 
 	private final String eventId;
 	private final String message;

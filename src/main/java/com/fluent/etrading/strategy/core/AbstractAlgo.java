@@ -20,7 +20,7 @@ public abstract class AbstractAlgo implements FluentService{
     }
 
 
-    public abstract void update( InboundEvent event );
+    public abstract void update( InEvent event );
 
     public final String getStrategyId( ){
         return strategyId;

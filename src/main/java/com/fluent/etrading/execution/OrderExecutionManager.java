@@ -11,7 +11,7 @@ import com.fluent.framework.market.*;
 import com.fluent.framework.events.core.*;
 import com.fluent.framework.events.out.*;
 
-import static com.fluent.framework.events.out.OutboundType.*;
+import static com.fluent.framework.events.out.OutType.*;
 
 /**
  * TODO:
