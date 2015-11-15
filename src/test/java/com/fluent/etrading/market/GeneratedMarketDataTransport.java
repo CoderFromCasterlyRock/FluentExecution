@@ -1,12 +1,14 @@
 package com.fluent.etrading.market;
 
 import org.slf4j.*;
+
 import java.util.*;
 import java.util.concurrent.*;
 
 import com.fluent.etrading.util.ExecUtil;
 import com.fluent.framework.collection.FluentThreadFactory;
-import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentSubType;
 import com.fluent.framework.transport.core.AbstractTransport;
 import com.fluent.framework.transport.core.TransportType;
 
@@ -16,6 +18,7 @@ import static com.fluent.framework.util.FluentUtil.*;
 public final class GeneratedMarketDataTransport extends AbstractTransport implements Runnable{
 
     private final Exchange exchange;
+    private final InstrumentSubType subType;
     private final String[] instruments;
     private final int frequency;
     private final TimeUnit timeUnit;
@@ -26,17 +29,19 @@ public final class GeneratedMarketDataTransport extends AbstractTransport implem
     
     //Should read instruments
     //Frequency and TimeUnit etc from the config file.
-    public GeneratedMarketDataTransport( Exchange exchange, String[] instruments ){
-    	this( ONE, TimeUnit.SECONDS, exchange, instruments );
+    public GeneratedMarketDataTransport( Exchange exchange, InstrumentSubType subType, String[] instruments ){
+    	this( ONE, TimeUnit.SECONDS, exchange, subType, instruments );
     }
     
     
-    public GeneratedMarketDataTransport( int frequency, TimeUnit timeUnit, Exchange exchange, String[] instruments ){
+    public GeneratedMarketDataTransport( int frequency, TimeUnit timeUnit, Exchange exchange, 
+    										InstrumentSubType subType, String[] instruments ){
         super( TransportType.FILE );
         
         this.frequency		= frequency;
         this.timeUnit		= timeUnit;
     	this.exchange		= exchange;
+    	this.subType		= subType;
     	this.instruments	= instruments;
         this.executor   	= Executors.newSingleThreadScheduledExecutor( new FluentThreadFactory(NAME) );
         
@@ -119,8 +124,9 @@ public final class GeneratedMarketDataTransport extends AbstractTransport implem
     	Exchange exchange				= Exchange.valueOf(args[2]);
     	
     	String[] instruments			= {"EDZ5", "EDH6", "EDM6", "EDU6", "EDZ6"};
+    	InstrumentSubType subType		= InstrumentSubType.ED_FUTURES;
     	
-    	AbstractTransport tport			= new GeneratedMarketDataTransport( exchange, instruments );
+    	AbstractTransport tport			= new GeneratedMarketDataTransport( exchange, subType, instruments );
     	
     	/*
     	final BufferedWriter bWriter 	= new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName)));

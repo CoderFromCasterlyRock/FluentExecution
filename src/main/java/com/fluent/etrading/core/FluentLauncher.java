@@ -2,6 +2,8 @@ package com.fluent.etrading.core;
 
 import org.slf4j.*;
 
+import com.fluent.framework.config.ConfigManager;
+
 import java.lang.Thread.*;
 
 import static com.fluent.framework.util.FluentUtil.*;
@@ -10,6 +12,7 @@ import static com.fluent.framework.util.FluentToolkit.*;
 
 public final class FluentLauncher{
 	
+	private final ConfigManager cfgManager;
 	private final FluentController controller;
 
 	private final static String CFG_KEY	= "fluent.framework.configFile";
@@ -30,7 +33,8 @@ public final class FluentLauncher{
 
 	
 	protected FluentLauncher( String cfgFileName ) throws Exception{
-		this.controller		= new FluentController( cfgFileName );
+		this.cfgManager		= new ConfigManager( cfgFileName );
+		this.controller		= new FluentController( cfgManager );
 	}
 	
     
@@ -41,6 +45,9 @@ public final class FluentLauncher{
 			String cfgFileLocation	= getConfigFile(CFG_KEY);
 			FluentLauncher launcher	= new FluentLauncher( cfgFileLocation );
        	
+			LOGGER.debug("Attempting to START {}.", launcher.cfgManager.getFrameworkInfo() );
+			LOGGER.debug("Configurations {} {}", launcher.cfgManager, NEWLINE );
+			
 			Runtime.getRuntime().addShutdownHook( new FluentShutdownThread(launcher.controller) );
 			launcher.controller.start();
 			

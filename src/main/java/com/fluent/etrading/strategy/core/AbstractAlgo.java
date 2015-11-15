@@ -4,7 +4,7 @@ import com.fluent.framework.core.*;
 import com.fluent.framework.events.in.*;
 
 
-public abstract class AbstractAlgo implements FluentService{
+public abstract class AbstractAlgo implements FluentLifecycle{
 
     private final String strategyId;
     private final String strategyName;

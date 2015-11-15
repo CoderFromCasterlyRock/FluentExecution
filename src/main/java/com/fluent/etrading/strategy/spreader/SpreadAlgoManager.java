@@ -5,7 +5,6 @@ import org.cliffc.high_scale_lib.*;
 
 import com.fluent.framework.algo.*;
 import com.fluent.framework.core.*;
-
 import com.fluent.etrading.events.in.*;
 import com.fluent.etrading.events.out.*;
 import com.fluent.framework.events.in.*;
@@ -21,7 +20,7 @@ public final class SpreadAlgoManager extends FluentAlgoManager{
     private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
 
 
-    public SpreadAlgoManager(  FluentServices services ){
+    public SpreadAlgoManager(  FluentServiceManager services ){
         super( NAME, services );
         this.strategyMap	= new NonBlockingHashMap<>( );
 

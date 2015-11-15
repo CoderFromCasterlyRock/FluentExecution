@@ -3,22 +3,23 @@ package com.fluent.etrading.market;
 import org.slf4j.*;
 
 import java.util.concurrent.*;
-
-import com.fluent.etrading.market.core.*;
-import com.fluent.framework.core.FluentService;
+import com.fluent.framework.core.FluentLifecycle;
 import com.fluent.framework.events.in.InEventDispatcher;
-import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentSubType;
+import com.fluent.framework.market.event.MarketDataEvent;
 import com.fluent.framework.util.TimeUtil;
 
 import static com.fluent.framework.util.FluentUtil.*;
 
 
-public final class DummyThrottledMDProducer implements Runnable, FluentService{
+public final class DummyThrottledMDProducer implements Runnable, FluentLifecycle{
 
 	private final long timeToRun;
 	private final long productionRate;
 	private final Exchange marketType;
-    private final InEventDispatcher dispatcher;
+	private final InstrumentSubType subType;
+	private final InEventDispatcher dispatcher;
     
     private final static String NAME    = DummyThrottledMDProducer.class.getSimpleName();
     private final static Logger LOGGER  = LoggerFactory.getLogger( NAME );
@@ -26,18 +27,20 @@ public final class DummyThrottledMDProducer implements Runnable, FluentService{
 
 
     public DummyThrottledMDProducer( long timeToRun, long productionRate, InEventDispatcher dispatcher ){
-    	this( Exchange.BTEC, timeToRun, TimeUnit.SECONDS, productionRate, TimeUnit.SECONDS, dispatcher );
+    	this( Exchange.BTEC, InstrumentSubType.OTR_TRASURY, timeToRun, TimeUnit.SECONDS, productionRate, TimeUnit.SECONDS, dispatcher );
     }
     
     
-    public DummyThrottledMDProducer( Exchange marketType,
-    										long timeToRun,
-                                        	TimeUnit runUnit,
-                                        	long productionRate,
-                                        	TimeUnit rateUnit,
-                                        	InEventDispatcher dispatcher ){
+    public DummyThrottledMDProducer(Exchange marketType,
+    								InstrumentSubType subType,
+    								long timeToRun,
+                                    TimeUnit runUnit,
+                                    long productionRate,
+                                    TimeUnit rateUnit,
+                                    InEventDispatcher dispatcher ){
 
         this.marketType     = marketType;
+        this.subType     	= subType;
         this.dispatcher     = dispatcher;
         this.timeToRun		= TimeUnit.SECONDS.convert( timeToRun, runUnit );
         this.productionRate	= TimeUnit.SECONDS.convert( productionRate, rateUnit );
@@ -81,7 +84,7 @@ public final class DummyThrottledMDProducer implements Runnable, FluentService{
             double[] ask            = { ask0, (ask0 + askTick), (ask0 + 2*askTick), (ask0 + 3*askTick), (ask0 + 2*askTick)};
             int[] askSize           = { 50, 60, 70, 80, 90 };
 
-            MarketDataEvent event   = new MarketDataEvent(  marketType, instrument, bid[0], bidSize[0], ask[0], askSize[0] );
+            MarketDataEvent event   = new MarketDataEvent( marketType, subType, instrument, bid[0], bidSize[0], ask[0], askSize[0] );
             dispatcher.enqueue( event );
    		    ++ eventsProducedCount;
    		    

@@ -1,5 +1,7 @@
 package com.fluent.etrading.core;
 
+import java.util.Arrays;
+
 import org.slf4j.*;
 
 import com.fluent.etrading.events.in.NewStrategyEvent;
@@ -9,8 +11,9 @@ import com.fluent.framework.admin.AdminClosingEvent;
 import com.fluent.framework.admin.StateManager;
 import com.fluent.framework.algo.FluentAlgoManager;
 import com.fluent.framework.config.ConfigManager;
-import com.fluent.framework.core.FluentService;
-import com.fluent.framework.core.FluentServices;
+import com.fluent.framework.core.FluentServiceManager;
+import com.fluent.framework.core.FluentLifecycle;
+import com.fluent.framework.core.FluentServiceType;
 import com.fluent.framework.events.in.*;
 import com.fluent.framework.events.out.OutEvent;
 import com.fluent.framework.events.out.OutEventDispatcher;
@@ -27,10 +30,10 @@ import static com.fluent.framework.events.in.InType.*;
 import static com.fluent.framework.core.FluentContext.FluentState.*;
 
 
-public final class FluentController implements InListener, FluentService{
+public final class FluentController implements InListener, FluentLifecycle{
 	
 	private final ConfigManager cfgManager;
-	private final FluentServices services;
+	private final FluentServiceManager services;
 	
 	private final StateManager stateManager;
 	private final MarketDataManager mdManager;
@@ -39,23 +42,22 @@ public final class FluentController implements InListener, FluentService{
 	private final PersisterService<OutEvent> outPersister;
 	private final OutEventDispatcher outDispatcher;
 	private final FluentAlgoManager algoManager;
-		
-	
+			
 	private final static String NAME    = FluentController.class.getSimpleName();
     private final static Logger LOGGER	= LoggerFactory.getLogger( NAME );
 
     
-	public FluentController( String cfgFileName ) throws Exception{
+	public FluentController( ConfigManager cfgManager ) throws Exception{
 		
-		this.cfgManager		= new ConfigManager( cfgFileName );
+		this.cfgManager		= cfgManager;
 		this.inPersister	= new InChroniclePersisterService(cfgManager);
 		this.inDispatcher	= new InEventDispatcher( );
 		this.outPersister	= new OutChroniclePersisterService(cfgManager);
 		this.outDispatcher	= new OutEventDispatcher( );
-		this.stateManager	= new StateManager( cfgManager, inDispatcher );
+		this.stateManager	= new StateManager(cfgManager, inDispatcher );
 		this.mdManager		= new MarketDataManager( cfgManager, inDispatcher );
 		
-		this.services		= new FluentServices(cfgManager, inDispatcher, outDispatcher, mdManager);
+		this.services		= new FluentServiceManager( cfgManager, inDispatcher, outDispatcher, mdManager);
 		this.algoManager	= new SpreadAlgoManager( services );
 		
 	}
@@ -95,14 +97,12 @@ public final class FluentController implements InListener, FluentService{
 		
 			long startTime 	= currentMillis( );
 			
+			LOGGER.info( "Starting services {}",  Arrays.deepToString(FluentServiceType.values()));
 			StateManager.setState( INITIALIZING );
-			LOGGER.debug("Attempting to START {}.", cfgManager.getFrameworkInfo() );
-			LOGGER.debug("Configurations {}", cfgManager );
 			startServices( );
-			
 			StateManager.setState( RUNNING );
-			long timeTaken 	= currentMillis( ) - startTime;
 			
+			long timeTaken 	= currentMillis( ) - startTime;
 			LOGGER.info( "Successfully STARTED Fluent Framework in [{}] ms.", timeTaken );
 			LOGGER.info( "************************************************************** {}", NEWLINE );
 
@@ -123,16 +123,21 @@ public final class FluentController implements InListener, FluentService{
 		
 	protected final void startServices( ){
 		
-		inDispatcher.register( this );
+		cfgManager.start();
+		inDispatcher.start();
+		inPersister.start();
+		
+		mdManager.start();
 		
 		outPersister.start();
 		outDispatcher.start();
-		inPersister.start();
-		inDispatcher.start();
 		stateManager.start();
 		
 		algoManager.start();
-		mdManager.start();
+		
+		inDispatcher.register( this );
+		
+		
 	}
 	
 	
@@ -147,7 +152,7 @@ public final class FluentController implements InListener, FluentService{
 		outDispatcher.stop();
 		outPersister.stop();
 		stateManager.stop();
-		
+		cfgManager.stop();
 	}
 	
 	
@@ -190,10 +195,9 @@ public final class FluentController implements InListener, FluentService{
 	@Override
 	public void stop( ){
 		
-		try{
+		try{			
 			
 			stopServices();
-			
 			LOGGER.debug("Successfully stopped {}.", NAME);
 			
 		}catch( Exception e ){
