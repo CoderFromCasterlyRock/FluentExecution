@@ -1,8 +1,8 @@
 package com.fluent.etrading.order;
 
-import com.eclipsesource.json.JsonObject;
 import com.fluent.framework.events.out.OutEvent;
 import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 import static com.fluent.framework.events.out.OutType.*;
@@ -50,12 +50,6 @@ public final class OrderEvent extends OutEvent{
         this.traderName     = traderName;
         this.portfolio      = portfolio;
 
-    }
-
-
-    @Override
-    public final String getEventId(){
-        return eventId;
     }
 
     
@@ -119,20 +113,20 @@ public final class OrderEvent extends OutEvent{
 
     
     @Override
-    protected final void toJSON( final JsonObject object ){
+    public final void toEventString( StringBuilder object ){
 
-        object.add( STRATEGY_ID.field(),        getStrategyId() );
-        object.add( ORDER_ID.field(),           getOrderId() );
-        object.add( EXCHANGE.field(),           getExchange().name() );
-        object.add( ORDER_TYPE.field(),         getOrderType().name() );
-        object.add( SIDE.field(),               getSide().name() );
-        object.add( SYMBOL.field(),    			getSymbol() );
-        object.add( PRICE.field(),              getPrice() );
-        object.add( SEND_QUANTITY.field(),      getSendQuantity() );
-        object.add( SHOW_QUANTITY.field(),      getShowQuantity() );
-        object.add( TRADER_ID.field(),          getTraderId() );
-        object.add( TRADER_NAME.field(),        getTraderName() );
-        object.add( PORTFOLIO.field(),          getPortfolio());
+        object.append( STRATEGY_ID.field()).append( getStrategyId() );
+        object.append( ORDER_ID.field()).append(getOrderId() );
+        object.append( EXCHANGE.field()).append( getExchange().name() );
+        object.append( ORDER_TYPE.field()).append( getOrderType().name() );
+        object.append( SIDE.field()).append(getSide().name() );
+        object.append( SYMBOL.field()).append(getSymbol() );
+        object.append( PRICE.field()).append( getPrice() );
+        object.append( SEND_QUANTITY.field()).append(getSendQuantity() );
+        object.append( SHOW_QUANTITY.field()).append(getShowQuantity() );
+        object.append( TRADER_ID.field()).append(getTraderId() );
+        object.append( TRADER_NAME.field()).append(getTraderName() );
+        object.append( PORTFOLIO.field()).append(getPortfolio());
 
     }
 

@@ -3,6 +3,7 @@ package com.fluent.etrading.market.params;
 import com.fluent.etrading.order.OrderEvent;
 import com.fluent.etrading.order.OrderType;
 import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
 
 
 public abstract class MarketParameter<R, O extends OrderEvent>{

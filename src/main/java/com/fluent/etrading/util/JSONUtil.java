@@ -5,15 +5,17 @@ import com.fluent.etrading.order.Side;
 import com.fluent.framework.events.core.*;
 import com.fluent.framework.events.in.InType;
 import com.fluent.framework.events.out.OutType;
-import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentType;
 
 import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
+
+
 public final class JSONUtil{
 
     protected JSONUtil(){}
-
 
 
     public final static InType valueAsInputType( JsonObject object ){

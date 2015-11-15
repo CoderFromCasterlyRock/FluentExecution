@@ -1,7 +1,5 @@
 package com.fluent.etrading.events.out;
 
-import com.eclipsesource.json.*;
-import com.fluent.framework.events.core.*;
 import com.fluent.framework.events.out.OutEvent;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
@@ -10,29 +8,21 @@ import static com.fluent.framework.events.out.OutType.*;
 
 public final class ResponseEvent extends OutEvent{
 
-	private final String eventId;
 	private final String strategyId;
     private final String orderId;
     private final String message;
 
-    private final static String PREFIX = "RESPONSE_";
+
     private final static long serialVersionUID = 1l;
     
     
     public ResponseEvent( String strategyId, String orderId, String message ){
         super( EVENT_TO_TRADER );
 
-        this.eventId     	= PREFIX + getSequenceId();
         this.strategyId     = strategyId;
         this.orderId    	= orderId;
         this.message    	= message;
         
-    }
-
-
-    @Override
-    public final String getEventId( ){
-        return eventId;
     }
 
     
@@ -51,13 +41,12 @@ public final class ResponseEvent extends OutEvent{
     }
 
     
-    @Override
-    protected final void toJSON( final JsonObject object ){
-        
-    	object.add( STRATEGY_ID.field(),     strategyId );
-    	object.add( ORDER_ID.field(),  		 orderId );
-    	object.add( UPDATE_MESSAGE.field(),  message );
-        
+	@Override
+	public final void toEventString(StringBuilder builder) {
+		builder.append( STRATEGY_ID.field() ).append( strategyId );
+		builder.append( ORDER_ID.field()).append( orderId );
+    	builder.append( UPDATE_MESSAGE.field()).append( message );
     }
+	
 
 }

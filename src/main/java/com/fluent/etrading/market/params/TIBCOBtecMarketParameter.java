@@ -3,6 +3,7 @@ package com.fluent.etrading.market.params;
 import java.util.*;
 
 import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
 import com.fluent.etrading.order.OrderEvent;
 
 

@@ -1,19 +1,16 @@
 package com.fluent.etrading.events.in;
 
-import com.eclipsesource.json.*;
 import com.fluent.etrading.order.Side;
 import com.fluent.framework.events.in.*;
-import com.fluent.framework.market.Exchange;
-import com.fluent.framework.market.InstrumentType;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentType;
 
 import static com.fluent.etrading.util.JSONUtil.*;
-import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
 
 public final class NewStrategyEvent extends InEvent{
 
-	private final String eventId;
 	private final String strategyId;
 	private final String strategyName;
 	private final String strategyTrader;
@@ -30,8 +27,7 @@ public final class NewStrategyEvent extends InEvent{
     private final InstrumentType[] legTypes;
     
     private final static long serialVersionUID 	= 1L;
-    private final static String PREFIX 			= "NewStrategy-";
-    
+        
     
     public NewStrategyEvent( String strategyId, String strategyName, String strategyTrader, Side strategySide, int strategyLegCount, Exchange strategyExchange, double strategySpread,
                              int[] legQtys, Side[] legSides, String[] legInstruments, boolean[] legWorking, int[] legSlices, InstrumentType[] legTypes ){
@@ -52,16 +48,9 @@ public final class NewStrategyEvent extends InEvent{
         this.legWorking       	= legWorking;
         this.legSlices       	= legSlices;
         this.legTypes       	= legTypes;
-        
-        this.eventId			= PREFIX + strategyId + UNDERSCORE + getSequenceId();
-   
+
     }
 
-   
-    @Override
-    public final String getEventId( ){
-        return eventId;
-    }
     
     
     public final String getStrategyId( ){
@@ -130,25 +119,25 @@ public final class NewStrategyEvent extends InEvent{
     }
     
     
-    @Override
-    protected final void toJSON( final JsonObject object ){
-
-        object.add( STRATEGY_ID.field(),        strategyId );
-        object.add( STRATEGY_NAME.field(),      strategyName );
-        object.add( STRATEGY_OWNER.field(),     strategyTrader );
-        object.add( STRATEGY_SIDE.field(),      strategySide.name() );
-        object.add( EXCHANGE.field(),      		strategyExchange.name() );
-        object.add( SPREAD.field(), 			strategySpread );
-        object.add( STRATEGY_LEG_COUNT.field(), strategyLegCount );
+	@Override
+	public final void toEventString( StringBuilder object ){
+		
+		object.append( STRATEGY_ID.field()).append(strategyId );
+        object.append( STRATEGY_NAME.field()).append(strategyName );
+        object.append( STRATEGY_OWNER.field()).append(strategyTrader );
+        object.append( STRATEGY_SIDE.field()).append(strategySide.name() );
+        object.append( EXCHANGE.field()).append(strategyExchange.name() );
+        object.append( SPREAD.field()).append(strategySpread );
+        object.append( STRATEGY_LEG_COUNT.field()).append( strategyLegCount );
         
-        object.add( QUANTITIES.field(),         convertFromIntArray( legQtys ) );
-        object.add( INSTRUMENTS.field(),        convertFromStringArray( legInstruments ) );
-        object.add( WORKING.field(),        	convertFromBoolArray( legWorking ) );
-        object.add( SIDES.field(),          	convertFromSideArray( legSides ) );
-        object.add( SLICES.field(),         	convertFromIntArray( legSlices ) );
-        object.add( INSTRUMENT_TYPE.field(),   	convertFromInstrumentTypesArray( legTypes ) );
+        object.append( QUANTITIES.field()).append(convertFromIntArray( legQtys ) );
+        object.append( INSTRUMENTS.field()).append(convertFromStringArray( legInstruments ) );
+        object.append( WORKING.field()).append(convertFromBoolArray( legWorking ) );
+        object.append( SIDES.field()).append(convertFromSideArray( legSides ) );
+        object.append( SLICES.field()).append(convertFromIntArray( legSlices ) );
+        object.append( INSTRUMENT_TYPE.field()).append(convertFromInstrumentTypesArray( legTypes ) );
         
-    }
+	}
     
 
 }

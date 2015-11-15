@@ -3,6 +3,7 @@ package com.fluent.etrading.events.out;
 import com.eclipsesource.json.*;
 import com.fluent.etrading.order.*;
 import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
 import com.fluent.framework.events.in.*;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
@@ -15,8 +16,7 @@ public final class ExecutionReportEvent extends InEvent{
 
     private final boolean isRejected;
 
-    private final String eventId;
-	private final String strategyId;
+    private final String strategyId;
     private final String externalId;
     private final String orderId;
     
@@ -48,7 +48,6 @@ public final class ExecutionReportEvent extends InEvent{
 
         super( EXECUTION_REPORT );
 
-        this.eventId			= orderId + UNDERSCORE + getSequenceId();
         this.isRejected			= isRejected;
         this.strategyId         = strategyId;
         this.externalId         = externalId;
@@ -63,12 +62,6 @@ public final class ExecutionReportEvent extends InEvent{
         this.executionPrice     = executionPrice;
         this.executionQuantity  = executionQuantity;
 
-    }
-
-    
-    @Override
-    public final String getEventId( ){
-        return eventId;
     }
 
     public final String getOrderId( ){
@@ -125,20 +118,20 @@ public final class ExecutionReportEvent extends InEvent{
 
 
     @Override
-    protected final void toJSON( final JsonObject object ){
+    public final void toEventString( StringBuilder object ){
 
-        object.add( STRATEGY_ID.field(),        getStrategyId() );
-        object.add( ORDER_ID.field(),           getOrderId() );
-        object.add( ORDER_EXTERNAL_ID.field(),  getOrderExternalId() );
-        object.add( FILL_STATUS.field(),        getFillStatus().name() );
-        object.add( SYMBOL.field(),    			getSymbol() );
-        object.add( EXECUTION_PRICE.field(),    getExecutionPrice() );
-        object.add( EXECUTION_QUANTITY.field(), getExecutionQuantity() );
-        object.add( SIDE.field(),               getSide().name() );
-        object.add( ORDER_TYPE.field(),         getOrderType().name() );
-        object.add( EXCHANGE.field(),           getMarketType().name() );
-        object.add( IS_REJECTED.field(),        isRejected() );
-        object.add( REJECTED_REASON.field(),    getRejectionReason() );
+        object.append( STRATEGY_ID.field() ).append( getStrategyId() );
+        object.append( ORDER_ID.field() ).append(getOrderId() );
+        object.append( ORDER_EXTERNAL_ID.field() ).append(getOrderExternalId() );
+        object.append( FILL_STATUS.field() ).append(getFillStatus().name() );
+        object.append( SYMBOL.field() ).append(getSymbol() );
+        object.append( EXECUTION_PRICE.field() ).append( getExecutionPrice() );
+        object.append( EXECUTION_QUANTITY.field() ).append(getExecutionQuantity() );
+        object.append( SIDE.field() ).append(getSide().name() );
+        object.append( ORDER_TYPE.field() ).append(getOrderType().name() );
+        object.append( EXCHANGE.field() ).append(getMarketType().name() );
+        object.append( IS_REJECTED.field() ).append(isRejected() );
+        object.append( REJECTED_REASON.field() ).append(getRejectionReason() );
         
     }
 

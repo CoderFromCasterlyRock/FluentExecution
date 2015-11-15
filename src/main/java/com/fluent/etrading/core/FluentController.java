@@ -3,22 +3,25 @@ package com.fluent.etrading.core;
 import org.slf4j.*;
 
 import com.fluent.etrading.events.in.NewStrategyEvent;
-import com.fluent.etrading.market.core.MarketDataManager;
 import com.fluent.etrading.order.Side;
 import com.fluent.etrading.strategy.spreader.SpreadAlgoManager;
+import com.fluent.framework.admin.AdminClosingEvent;
 import com.fluent.framework.admin.StateManager;
-import com.fluent.framework.admin.MetronomeEvent;
+import com.fluent.framework.algo.FluentAlgoManager;
+import com.fluent.framework.config.ConfigManager;
 import com.fluent.framework.core.FluentService;
+import com.fluent.framework.core.FluentServices;
 import com.fluent.framework.events.in.*;
 import com.fluent.framework.events.out.OutEvent;
 import com.fluent.framework.events.out.OutEventDispatcher;
-import com.fluent.framework.market.Exchange;
-import com.fluent.framework.market.InstrumentType;
+import com.fluent.framework.market.adaptor.MarketDataManager;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentType;
 import com.fluent.framework.persistence.InChroniclePersisterService;
 import com.fluent.framework.persistence.OutChroniclePersisterService;
 import com.fluent.framework.persistence.PersisterService;
-import com.fluent.framework.util.TimeUtil;
 
+import static com.fluent.framework.util.TimeUtil.*;
 import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.events.in.InType.*;
 import static com.fluent.framework.core.FluentContext.FluentState.*;
@@ -26,35 +29,34 @@ import static com.fluent.framework.core.FluentContext.FluentState.*;
 
 public final class FluentController implements InListener, FluentService{
 	
-	private final AlgoConfigManager cfgManager;
+	private final ConfigManager cfgManager;
+	private final FluentServices services;
+	
 	private final StateManager stateManager;
 	private final MarketDataManager mdManager;
-	
 	private final PersisterService<InEvent> inPersister;
 	private final InEventDispatcher inDispatcher;
-	
 	private final PersisterService<OutEvent> outPersister;
 	private final OutEventDispatcher outDispatcher;
-	
-	private final SpreadAlgoManager algoManager;
+	private final FluentAlgoManager algoManager;
 		
+	
 	private final static String NAME    = FluentController.class.getSimpleName();
     private final static Logger LOGGER	= LoggerFactory.getLogger( NAME );
 
     
-	public FluentController( AlgoConfigManager cfgManager ) throws Exception{
+	public FluentController( String cfgFileName ) throws Exception{
 		
-		this.cfgManager		= cfgManager;
-				
+		this.cfgManager		= new ConfigManager( cfgFileName );
 		this.inPersister	= new InChroniclePersisterService(cfgManager);
-		this.inDispatcher	= new InEventDispatcher( inPersister );
-		
+		this.inDispatcher	= new InEventDispatcher( );
 		this.outPersister	= new OutChroniclePersisterService(cfgManager);
-		this.outDispatcher	= new OutEventDispatcher( outPersister );
-		
+		this.outDispatcher	= new OutEventDispatcher( );
 		this.stateManager	= new StateManager( cfgManager, inDispatcher );
 		this.mdManager		= new MarketDataManager( cfgManager, inDispatcher );
-		this.algoManager	= new SpreadAlgoManager( cfgManager, inDispatcher, outDispatcher);
+		
+		this.services		= new FluentServices(cfgManager, inDispatcher, outDispatcher, mdManager);
+		this.algoManager	= new SpreadAlgoManager( services );
 		
 	}
 
@@ -67,14 +69,22 @@ public final class FluentController implements InListener, FluentService{
 	
 	@Override
 	public final boolean isSupported( InType type ){
-		return METRONOME_EVENT == type;
+		return CLOSING_EVENT == type;
 	}
 
 
 	@Override
-	public final boolean update( InEvent event ){
-		handleMetronomeEvent( event );
-		return false;
+	public final boolean inUpdate( InEvent event ){
+		
+		AdminClosingEvent closeEvent= (AdminClosingEvent) event;
+		boolean isAppClosing		= closeEvent.appClosing();
+			
+		if( isAppClosing ){
+			LOGGER.info("STOPPING as we received [{}].", closeEvent );
+			stop();
+		}
+		
+		return isAppClosing;
 	}
 	
 
@@ -83,15 +93,15 @@ public final class FluentController implements InListener, FluentService{
 				
 		try{
 		
-			long startTime 	= TimeUtil.currentMillis( );
+			long startTime 	= currentMillis( );
 			
 			StateManager.setState( INITIALIZING );
-			LOGGER.debug("Attempting to START Fluent Framework {}.", StateManager.getFrameworkInfo() );
+			LOGGER.debug("Attempting to START {}.", cfgManager.getFrameworkInfo() );
 			LOGGER.debug("Configurations {}", cfgManager );
 			startServices( );
 			
 			StateManager.setState( RUNNING );
-			long timeTaken 	= TimeUtil.currentMillis( ) - startTime;
+			long timeTaken 	= currentMillis( ) - startTime;
 			
 			LOGGER.info( "Successfully STARTED Fluent Framework in [{}] ms.", timeTaken );
 			LOGGER.info( "************************************************************** {}", NEWLINE );
@@ -115,7 +125,9 @@ public final class FluentController implements InListener, FluentService{
 		
 		inDispatcher.register( this );
 		
+		outPersister.start();
 		outDispatcher.start();
+		inPersister.start();
 		inDispatcher.start();
 		stateManager.start();
 		
@@ -127,11 +139,13 @@ public final class FluentController implements InListener, FluentService{
 	protected final void stopServices( ){
 		
 		inDispatcher.stop();
+		inPersister.stop();
 		mdManager.stop();
 		
 		algoManager.stop();
 		
 		outDispatcher.stop();
+		outPersister.stop();
 		stateManager.stop();
 		
 	}
@@ -162,37 +176,16 @@ public final class FluentController implements InListener, FluentService{
 	    String[] legInstruments		= {"EDH6", "EDM6"};
 	    boolean[] legWorking		= {true, false};
 	    int[] legSlices				= {10, 20};
-	    InstrumentType[] legTypes	= {InstrumentType.ED_FUTURES, InstrumentType.ED_FUTURES};
+	    InstrumentType[] legTypes	= {InstrumentType.FUTURES, InstrumentType.FUTURES};
 	    	    
 		
-		InEvent newStratgey 	= new NewStrategyEvent( strategyId, strategyName, strategyTrader, strategySide, strategyLegCount, strategyExchange, strategySpread,
+		InEvent newStratgey 		= new NewStrategyEvent( strategyId, strategyName, strategyTrader, strategySide, strategyLegCount, strategyExchange, strategySpread,
 															legQtys, legSides, legInstruments, legWorking, legSlices, legTypes );
 		inDispatcher.enqueue( newStratgey );
 	
 	}
 	
-	
-	//TODO: Convert Seconds to close to AfterHours, WorkingHOurs, ClosingHours enum?
-	protected final void handleMetronomeEvent( InEvent event ){
-		
-		MetronomeEvent metroEvent 	= (MetronomeEvent) event;
-		long secondsToClose			= metroEvent.getSecondsToClose();
-		
-		if( secondsToClose <= 0 ){
-			LOGGER.warn("[{}] is running outside working hours [{}], some features may be unavailable.", cfgManager.getInstance( ), cfgManager.getWorkingHours() );
-			return;
-		}
-		
-		if( secondsToClose > 10 ){
-			LOGGER.debug("Metronome event arrives, we have [{}] seconds to close.", secondsToClose );
-			return;
-		}
-		
-		LOGGER.info("STOPPING as we only have [{}] seconds to close.", secondsToClose );
-		stop();
-		
-	}
-	
+
 
 	@Override
 	public void stop( ){

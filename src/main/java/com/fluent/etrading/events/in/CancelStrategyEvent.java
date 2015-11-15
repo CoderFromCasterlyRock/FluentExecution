@@ -1,21 +1,17 @@
 package com.fluent.etrading.events.in;
 
-import com.eclipsesource.json.*;
 import com.fluent.framework.events.in.*;
 
-import static com.fluent.framework.util.FluentUtil.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
 
 public final class CancelStrategyEvent extends InEvent{
 
-	private final String eventId;
 	private final String strategyId;
 	private final String strategyTrader;
 	private final String reason;
     
     private final static long serialVersionUID 	= 1L;
-    private final static String PREFIX 			= "CancelStrategy-";
     
     
     public CancelStrategyEvent( String strategyId, String strategyTrader, String reason ){
@@ -25,14 +21,7 @@ public final class CancelStrategyEvent extends InEvent{
         this.strategyId			= strategyId;
         this.strategyTrader     = strategyTrader;
         this.reason       		= reason;
-        this.eventId			= PREFIX + strategyId + UNDERSCORE + getSequenceId();
-   
-    }
-
-   
-    @Override
-    public final String getEventId( ){
-        return eventId;
+  
     }
     
     
@@ -52,10 +41,10 @@ public final class CancelStrategyEvent extends InEvent{
 
         
     @Override
-    protected final void toJSON( final JsonObject object ){
-        object.add( STRATEGY_ID.field(),        strategyId );
-        object.add( STRATEGY_OWNER.field(),     strategyTrader );
-        object.add( REASON.field(),     		reason );
+    public final void toEventString( StringBuilder builder ){
+    	builder.append( STRATEGY_ID.field() ).append( strategyId );
+        builder.append( STRATEGY_OWNER.field() ).append(strategyTrader );
+        builder.append( REASON.field() ).append(reason );
     }
     
 

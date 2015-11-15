@@ -7,8 +7,7 @@ import java.util.concurrent.*;
 
 import org.jctools.queues.*;
 
-import com.fluent.framework.market.MarketDataEvent;
-import com.fluent.framework.util.*;
+import com.fluent.framework.market.event.*;
 import com.fluent.etrading.order.*;
 import com.fluent.etrading.events.in.*;
 import com.fluent.etrading.events.out.*;
@@ -157,9 +156,8 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
         ExecutionReportEvent eReport    = (ExecutionReportEvent) event;
         String orderId                  = eReport.getOrderId();
         OrderFillStatus fillStatus      = eReport.getFillStatus();
-        String eReportAsJson            = eReport.toJSON();
-
-        LOGGER.debug( "ExecutionReport arrived [{}]", eReportAsJson);
+        
+        LOGGER.debug( "ExecutionReport arrived [{}]", eReport);
        // getOutDispatcher().addResponseEvent( nextOutputEventId(), eReport, "Execution Report Arrived" );
 
         switch( fillStatus ){
@@ -173,7 +171,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
             }
 
             case MARKET_REJECTED:{
-                String message =  "STOPPING [" + getStrategyName() + "] as OrderId " + orderId + " was rejected by " + eReport.getMarketType();
+                String message =  "STOPPING [" + getStrategyName() + "] as OrderId " + orderId + " was rejected by " + eReport;
                 LOGGER.warn( "{}", message );
                 //getOutDispatcher().addResponseEvent( nextOutputEventId(), null, message );
                 stop();
@@ -184,7 +182,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
             case LIVE_PARTIAL_FILL:
             case LIVE_FULL_FILL:
             case LIVE_OVER_FILL:
-                String message =  "Fill Arrived for OrderId " + orderId + " of " + getStrategyName() + " from Market: " + eReport.getMarketType();
+                String message =  "Fill Arrived for OrderId " + orderId + " of " + getStrategyName() + " from Market: " + eReport;
                 LOGGER.debug( "{}", message );
                 //HANDLE IT
                 //getOutDispatcher().addResponseEvent( nextOutputEventId(), null, message );

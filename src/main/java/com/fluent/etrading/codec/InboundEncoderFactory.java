@@ -4,7 +4,9 @@ import java.util.*;
 
 import org.slf4j.*;
 
-import com.fluent.framework.market.*;
+import com.fluent.framework.market.core.Exchange;
+import com.fluent.framework.market.core.InstrumentSubType;
+import com.fluent.framework.market.event.MarketDataEvent;
 import com.fluent.framework.events.in.*;
 
 import static com.fluent.framework.util.FluentUtil.*;
@@ -48,14 +50,15 @@ public final class InboundEncoderFactory{
 	
 		List<String> data		= fastSplit(message, COLON_CHAR);
 		
-		Exchange exchange		= Exchange.valueFrom( data.get(ZERO) );
-		String symbol			= toUpper( data.get(ONE) );
-		double bid				= Double.parseDouble(data.get(TWO) );
-		int bidSize				= Integer.parseInt(data.get(THREE) );
-		double ask				= Double.parseDouble(data.get(FOUR) );
-		int askSize				= Integer.parseInt(data.get(FIVE) );
+		Exchange exchange		= Exchange.fromCode( data.get(ZERO) );
+		InstrumentSubType sType	= InstrumentSubType.valueOf(data.get(ONE));
+		String symbol			= toUpper( data.get(TWO) );
+		double bid				= Double.parseDouble(data.get(THREE) );
+		int bidSize				= Integer.parseInt(data.get(FOUR) );
+		double ask				= Double.parseDouble(data.get(FIVE) );
+		int askSize				= Integer.parseInt(data.get(SIX) );
 		
-		return new MarketDataEvent( exchange, symbol, bid, bidSize, ask, askSize );
+		return new MarketDataEvent( exchange, sType, symbol, bid, bidSize, ask, askSize );
 		
 	}
 	
