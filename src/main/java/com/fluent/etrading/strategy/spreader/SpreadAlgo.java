@@ -2,12 +2,13 @@ package com.fluent.etrading.strategy.spreader;
 
 import org.slf4j.*;
 
+import uk.co.real_logic.agrona.concurrent.*;
+
 import java.util.*;
 import java.util.concurrent.*;
 
-import org.jctools.queues.*;
-
 import com.fluent.framework.market.event.*;
+import com.fluent.framework.strategy.FluentStrategy;
 import com.fluent.etrading.order.*;
 import com.fluent.etrading.events.in.*;
 import com.fluent.etrading.events.out.*;
@@ -18,14 +19,14 @@ import com.fluent.etrading.strategy.core.*;
 import static com.fluent.framework.util.FluentUtil.*;
 
 
-public final class SpreadAlgo extends AbstractAlgo implements Runnable{
+public final class SpreadAlgo extends FluentStrategy implements Runnable{
 
     private AlgoState state;
     private volatile boolean keepRunning; 
 
     private final String[] instruments;
     private final ExecutorService service;
-    private final SpscArrayQueue<InEvent> queue;
+    private final OneToOneConcurrentArrayQueue<FluentInEvent> queue;
     private final Map<String, MarketDataEvent> priceMap;
 
     private final static Logger LOGGER      =  LoggerFactory.getLogger( SpreadAlgo.class.getSimpleName() );
@@ -33,12 +34,12 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
     public SpreadAlgo( String strategyId, NewStrategyEvent strategy ){
     	
-        super( strategyId, strategy.getStrategyName(), strategy.getStrategyTrader() );
+        super( strategyId, strategy.getStrategyType() );
 
         this.instruments    = strategy.getInstruments();
         this.priceMap       = new HashMap<String, MarketDataEvent>( FOUR );
-        this.queue          = new SpscArrayQueue<InEvent>( FOUR * SIXTY_FOUR );
-        this.service        = Executors.newSingleThreadExecutor( new FluentThreadFactory( getStrategyName() ) );
+        this.queue          = new OneToOneConcurrentArrayQueue<>( FOUR * SIXTY_FOUR );
+        this.service        = Executors.newSingleThreadExecutor( new FluentThreadFactory( strategyId ) );
         this.state			= AlgoState.CREATED;
         
     }
@@ -46,7 +47,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     
     @Override
     public final String name( ){
-        return getStrategyName();
+        return getStrategyId();
     }
 
 
@@ -65,7 +66,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     
 
     @Override
-    public final void update( InEvent event ){
+    public final void update( FluentInEvent event ){
         queue.offer( event );
     }
 
@@ -77,7 +78,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
 
             try{
 
-            	InEvent event = queue.poll();
+            	FluentInEvent event = queue.poll();
                 if( event == null ){
                     FluentBackoffStrategy.apply();
                     continue;
@@ -94,40 +95,37 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     }
 
 
-    protected final void handleEvent( InEvent event ){
+    protected final void handleEvent( FluentInEvent event ){
 
-        InType type	= event.getType();
+        FluentInType type	= event.getType();
 
         switch( type ){
 
         		case MARKET_DATA:
         			handleMarketData( event );
         		break;
-
         		
         		case NEW_STRATEGY:
         			handleNewStrategy( event );
                 break;
-
                 
         		case CANCEL_STRATEGY:
         			handleCancelStrategy( event );
                 break;
-
             
         		case EXECUTION_REPORT:
         			handleExecutionReport( event );
                 break;
-
-            default:
-                LOGGER.warn( "InboundEvent of Type [{}] is unsupported.", type );
+                
+        		default:
+        			LOGGER.warn( "InboundEvent of Type [{}] is unsupported.", type );
 
         }
 
     }
 
 
-     protected void handleMarketData( InEvent event ){
+     protected void handleMarketData( FluentInEvent event ){
 
         MarketDataEvent mdEvent	= (MarketDataEvent) event;
         String instrument	    = mdEvent.getSymbol();
@@ -140,18 +138,18 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
      
      
      
-     protected void handleNewStrategy( InEvent event ){
+     protected void handleNewStrategy( FluentInEvent event ){
       	LOGGER.debug( "NEW STARTEGY EXECUTE!");
       }
      
      
-     protected void handleCancelStrategy( InEvent event ){
+     protected void handleCancelStrategy( FluentInEvent event ){
      	LOGGER.debug( "handleCancelStrategy is unsupported!");
      }
      
 
 
-    protected void handleExecutionReport( InEvent event ){
+    protected void handleExecutionReport( FluentInEvent event ){
 
         ExecutionReportEvent eReport    = (ExecutionReportEvent) event;
         String orderId                  = eReport.getOrderId();
@@ -163,7 +161,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
         switch( fillStatus ){
 
             case INTERNALLY_REJECTED:{
-                String message =  "STOPPING [" + getStrategyName() + "] as OrderId " + orderId + " was internally rejected.";
+                String message =  "STOPPING [" + getStrategyId() + "] as OrderId " + orderId + " was internally rejected.";
                 LOGGER.warn( "{}", message );
                 //getOutDispatcher().addResponseEvent( nextOutputEventId(), null, message );
                 stop();
@@ -171,7 +169,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
             }
 
             case MARKET_REJECTED:{
-                String message =  "STOPPING [" + getStrategyName() + "] as OrderId " + orderId + " was rejected by " + eReport;
+                String message =  "STOPPING [" + getStrategyId() + "] as OrderId " + orderId + " was rejected by " + eReport;
                 LOGGER.warn( "{}", message );
                 //getOutDispatcher().addResponseEvent( nextOutputEventId(), null, message );
                 stop();
@@ -182,7 +180,7 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
             case LIVE_PARTIAL_FILL:
             case LIVE_FULL_FILL:
             case LIVE_OVER_FILL:
-                String message =  "Fill Arrived for OrderId " + orderId + " of " + getStrategyName() + " from Market: " + eReport;
+                String message =  "Fill Arrived for OrderId " + orderId + " of " + getStrategyId() + " from Market: " + eReport;
                 LOGGER.debug( "{}", message );
                 //HANDLE IT
                 //getOutDispatcher().addResponseEvent( nextOutputEventId(), null, message );
@@ -194,12 +192,12 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
         }
 
     }
-
+    
 
     @Override
     public final void stop( ){
         keepRunning = false;
-        LOGGER.debug( "Stopped [{}] thread.", getStrategyName() );
+        LOGGER.debug( "Stopped [{}] thread.", getStrategyId() );
     }
 
 
@@ -208,9 +206,8 @@ public final class SpreadAlgo extends AbstractAlgo implements Runnable{
     	
         StringBuilder info 	= new StringBuilder( THIRTY_TWO );
         
-        info.append( getStrategyName() ).append( COMMA );
-        info.append( getStrategyId() ).append( COMMA );
-        info.append( getStrategyOwner() ).append( COMMA );
+        info.append( getStrategyId() ).append( COMMASP );
+        info.append( getStrategyType() ).append( COMMASP );
         info.append( getStrategyState() );
         
         return info.toString();

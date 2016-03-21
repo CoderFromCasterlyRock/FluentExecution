@@ -19,9 +19,9 @@ public final class InboundEncoderFactory{
 	private final static Logger LOGGER      = LoggerFactory.getLogger( NAME );
 	
 	
-	public final static InEvent create( InType type, String message ){
+	public final static FluentInEvent create( FluentInType type, String message ){
 		
-		InEvent event 	= null;
+		FluentInEvent event 	= null;
 		
 		try{
 		
@@ -46,7 +46,7 @@ public final class InboundEncoderFactory{
 
 	
 	//CME:EDZ5:97.59:1000:98.41:1200
-	protected final static InEvent createMdEvent( String message ){
+	protected final static FluentInEvent createMdEvent( String message ){
 	
 		List<String> data		= fastSplit(message, COLON_CHAR);
 		

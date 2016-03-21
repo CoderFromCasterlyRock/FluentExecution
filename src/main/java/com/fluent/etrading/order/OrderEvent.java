@@ -1,14 +1,14 @@
 package com.fluent.etrading.order;
 
-import com.fluent.framework.events.out.OutEvent;
+import com.fluent.framework.events.out.FluentOutEvent;
 import com.fluent.framework.market.*;
 import com.fluent.framework.market.core.Exchange;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.out.OutType.*;
+import static com.fluent.framework.events.out.FluentOutType.*;
 
 
-public final class OrderEvent extends OutEvent{
+public final class OrderEvent extends FluentOutEvent{
 
 	private final String eventId;
     private final String strategyId;

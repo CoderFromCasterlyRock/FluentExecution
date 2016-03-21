@@ -5,7 +5,7 @@ import com.fluent.framework.events.in.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
 
-public final class CancelStrategyEvent extends InEvent{
+public final class CancelStrategyEvent extends FluentInEvent{
 
 	private final String strategyId;
 	private final String strategyTrader;
@@ -16,7 +16,7 @@ public final class CancelStrategyEvent extends InEvent{
     
     public CancelStrategyEvent( String strategyId, String strategyTrader, String reason ){
 
-        super( InType.NEW_STRATEGY );
+        super( FluentInType.NEW_STRATEGY );
 
         this.strategyId			= strategyId;
         this.strategyTrader     = strategyTrader;

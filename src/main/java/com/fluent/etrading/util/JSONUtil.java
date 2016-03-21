@@ -3,8 +3,8 @@ package com.fluent.etrading.util;
 import com.eclipsesource.json.*;
 import com.fluent.etrading.order.Side;
 import com.fluent.framework.events.core.*;
-import com.fluent.framework.events.in.InType;
-import com.fluent.framework.events.out.OutType;
+import com.fluent.framework.events.in.FluentInType;
+import com.fluent.framework.events.out.FluentOutType;
 import com.fluent.framework.market.core.Exchange;
 import com.fluent.framework.market.core.InstrumentType;
 
@@ -18,12 +18,12 @@ public final class JSONUtil{
     protected JSONUtil(){}
 
 
-    public final static InType valueAsInputType( JsonObject object ){
-        return InType.valueOf( object.get(EVENT_TYPE.field()).asString() );
+    public final static FluentInType valueAsInputType( JsonObject object ){
+        return FluentInType.valueOf( object.get(EVENT_TYPE.field()).asString() );
     }
 
-    public final static OutType valueAsOutputType( JsonObject object ){
-        return OutType.valueOf( object.get(EVENT_TYPE.field()).asString() );
+    public final static FluentOutType valueAsOutputType( JsonObject object ){
+        return FluentOutType.valueOf( object.get(EVENT_TYPE.field()).asString() );
     }
 
 

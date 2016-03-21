@@ -4,16 +4,18 @@ import com.fluent.etrading.order.Side;
 import com.fluent.framework.events.in.*;
 import com.fluent.framework.market.core.Exchange;
 import com.fluent.framework.market.core.InstrumentType;
+import com.fluent.framework.strategy.StrategyType;
 
 import static com.fluent.etrading.util.JSONUtil.*;
 import static com.fluent.framework.events.core.FluentJsonTags.*;
 
 
-public final class NewStrategyEvent extends InEvent{
+public final class NewStrategyEvent extends FluentInEvent{
 
 	private final String strategyId;
 	private final String strategyName;
 	private final String strategyTrader;
+	private final StrategyType strategyType;
 	private final Side strategySide;
     private final int strategyLegCount;
     private final Exchange strategyExchange;
@@ -29,14 +31,16 @@ public final class NewStrategyEvent extends InEvent{
     private final static long serialVersionUID 	= 1L;
         
     
-    public NewStrategyEvent( String strategyId, String strategyName, String strategyTrader, Side strategySide, int strategyLegCount, Exchange strategyExchange, double strategySpread,
+    public NewStrategyEvent( String strategyId, String strategyName, String strategyTrader, StrategyType strategyType,
+    						 Side strategySide, int strategyLegCount, Exchange strategyExchange, double strategySpread,
                              int[] legQtys, Side[] legSides, String[] legInstruments, boolean[] legWorking, int[] legSlices, InstrumentType[] legTypes ){
 
-        super( InType.NEW_STRATEGY );
+        super( FluentInType.NEW_STRATEGY );
 
         this.strategyId			= strategyId;
-        this.strategyTrader     = strategyTrader;
         this.strategyName       = strategyName;
+        this.strategyTrader     = strategyTrader;
+        this.strategyType		= strategyType;
         this.strategySide       = strategySide;
         this.strategyLegCount   = strategyLegCount;
         this.strategyExchange	= strategyExchange;
@@ -50,7 +54,6 @@ public final class NewStrategyEvent extends InEvent{
         this.legTypes       	= legTypes;
 
     }
-
     
     
     public final String getStrategyId( ){
@@ -58,7 +61,6 @@ public final class NewStrategyEvent extends InEvent{
     }
     
 
-    
     public final String getStrategyTrader(){
         return strategyTrader;
     }
@@ -66,6 +68,11 @@ public final class NewStrategyEvent extends InEvent{
 
     public final String getStrategyName(){
         return strategyName;
+    }
+
+
+    public final StrategyType getStrategyType(){
+        return strategyType;
     }
 
     
@@ -122,6 +129,7 @@ public final class NewStrategyEvent extends InEvent{
 	@Override
 	public final void toEventString( StringBuilder object ){
 		
+		object.append( STRATEGY_TYPE.field()).append(strategyTrader );
 		object.append( STRATEGY_ID.field()).append(strategyId );
         object.append( STRATEGY_NAME.field()).append(strategyName );
         object.append( STRATEGY_OWNER.field()).append(strategyTrader );

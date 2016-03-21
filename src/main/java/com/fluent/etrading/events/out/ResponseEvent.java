@@ -1,12 +1,12 @@
 package com.fluent.etrading.events.out;
 
-import com.fluent.framework.events.out.OutEvent;
+import com.fluent.framework.events.out.FluentOutEvent;
 
 import static com.fluent.framework.events.core.FluentJsonTags.*;
-import static com.fluent.framework.events.out.OutType.*;
+import static com.fluent.framework.events.out.FluentOutType.*;
 
 
-public final class ResponseEvent extends OutEvent{
+public final class ResponseEvent extends FluentOutEvent{
 
 	private final String strategyId;
     private final String orderId;
